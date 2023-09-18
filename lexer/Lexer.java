@@ -223,7 +223,7 @@ public class Lexer {
                 if (curIndex < srcLength) {
                     while (curIndex < srcLength) {
                         cur = sourceCode.charAt(curIndex);
-                        if ('0' <= cur && cur <= '9' || 'a' <= cur && cur <= 'z' || 'A' <= cur && cur <= 'Z' || cur == '-') {
+                        if ('0' <= cur && cur <= '9' || 'a' <= cur && cur <= 'z' || 'A' <= cur && cur <= 'Z' || cur == '_') {
                             sb.append(cur);
                             curIndex++;
                         } else {
@@ -264,7 +264,7 @@ public class Lexer {
                             sb.append(cur);
                             curIndex++;
                         } else {
-                            if (cur == ' ') {
+                            if (cur == ' ') { //TODO:这里+-*/也会终止，需要在错误处理时重新弄
                                 break;
                             } else {
                                 //TODO:错误的数字常量
@@ -288,7 +288,7 @@ public class Lexer {
                         sb.append(cur);
                         curIndex++;
                     } else {
-                        if (cur == ' ') {
+                        if (cur == ' ') { //TODO:和上面一样，可能由运算符终结
                             curIndex++;
                             break;
                         } else {
