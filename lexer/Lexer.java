@@ -288,7 +288,7 @@ public class Lexer {
                         sb.append(cur);
                         curIndex++;
                     } else {
-                        if (cur == ' ') { //TODO:和上面一样，可能由运算符终结
+                        if (cur == ' ') { //TODO:和上面一样，可能由运算符终结，分隔符是\n \t \r 空格
                             curIndex++;
                             break;
                         } else {
@@ -397,6 +397,14 @@ public class Lexer {
         }
     }
 
+    public Token getToken() {
+        return null;
+    }
+
+    public boolean isFileEnd() {
+        return curIndex < sourceCode.length();
+    }
+
     public void listToken() {
         StringBuilder stringBuilder = new StringBuilder();
         for (Token token : tokenList) {
@@ -423,7 +431,7 @@ public class Lexer {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        return stringJoiner.toString();
+        return stringJoiner.toString().replace("\r", "");
     }
 
     public void writeFile(String filePath, String content) {
