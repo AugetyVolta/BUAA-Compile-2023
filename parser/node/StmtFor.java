@@ -68,7 +68,7 @@ public class StmtFor extends StmtEle {
         if (forStmt2 != null) {
             sb.append(forStmt2.toString());
         }
-        sb.append(lparent.toString());
+        sb.append(rparent.toString());
         sb.append(stmt.toString());
         return sb.toString();
     }
