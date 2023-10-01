@@ -338,4 +338,8 @@ public class Lexer {
         }
         writeFile("output.txt", stringBuilder.toString());
     }
+
+    public ArrayList<Token> getTokenList() {
+        return this.tokenList;
+    }
 }
