@@ -339,6 +339,14 @@ public class Lexer {
         writeFile("output.txt", stringBuilder.toString());
     }
 
+    public void displayWithLineNum() {
+        StringBuilder stringBuilder = new StringBuilder();
+        for (Token token : tokenList) {
+            stringBuilder.append(token.toString()).append(" ").append(token.getLine()).append("\n");
+        }
+        writeFile("output.txt", stringBuilder.toString());
+    }
+
     public ArrayList<Token> getTokenList() {
         return this.tokenList;
     }
