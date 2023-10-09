@@ -38,6 +38,11 @@ public class Parser {
         return null;
     }
 
+    public void goBack(int recordIndex) {
+        curIndex = recordIndex;
+        curToken = tokenList.get(this.curIndex);
+    }
+
     public CompUnitNode parseCompUnit() {
         CompUnitNode compUnitNode = new CompUnitNode();
         //{Decl}
@@ -492,60 +497,67 @@ public class Parser {
         StmtNode stmtNode = new StmtNode();
         Token preRead1 = preRead(1);
         if (curToken.getSyntaxType() == SyntaxType.IDENFR &&
-                preRead1.getSyntaxType() == SyntaxType.ASSIGN ||
+                preRead1.getSyntaxType() == SyntaxType.ASSIGN || //这个是LVal的一种
                 curToken.getSyntaxType() == SyntaxType.IDENFR &&
-                        preRead1.getSyntaxType() == SyntaxType.LBRACK //通过这个判断是否是Exp
-        ) { //Assign 和 getint
+                        preRead1.getSyntaxType() == SyntaxType.LBRACK // 这个是LVal的另一种，但是可能是Exp->LVal
+        ) { //Assign 和 getint 或者是Exp
             //LVal
+            int recordIndex = curIndex;
             LValNode lValNode = parseLVal();
             // =
-            TerminalNode assign = new TerminalNode(curToken);
-            nextToken();
-            if (curToken.getSyntaxType() == SyntaxType.GETINTTK) {
-                StmtGetint stmtGetint = new StmtGetint();
-                stmtGetint.addChild(lValNode);
-                stmtGetint.addChild(assign);
-                //getInt
-                TerminalNode getIntTk = new TerminalNode(curToken);
-                stmtGetint.addChild(getIntTk);
+            if (curToken.getSyntaxType() == SyntaxType.ASSIGN) { // 如果是=，走getint或者StmtAssign的解析
+                TerminalNode assign = new TerminalNode(curToken);
                 nextToken();
-                // (
-                TerminalNode lparent = new TerminalNode(curToken);
-                stmtGetint.addChild(lparent);
-                nextToken();
-                // )
-                if (curToken.getSyntaxType() == SyntaxType.RPARENT) {
-                    TerminalNode rparent = new TerminalNode(curToken);
-                    stmtGetint.addChild(rparent);
+                if (curToken.getSyntaxType() == SyntaxType.GETINTTK) {
+                    StmtGetint stmtGetint = new StmtGetint();
+                    stmtGetint.addChild(lValNode);
+                    stmtGetint.addChild(assign);
+                    //getInt
+                    TerminalNode getIntTk = new TerminalNode(curToken);
+                    stmtGetint.addChild(getIntTk);
                     nextToken();
-                } else {
-                    //TODO:报错
-                }
-                // semicn
-                if (curToken.getSyntaxType() == SyntaxType.SEMICN) {
-                    TerminalNode semicn = new TerminalNode(curToken);
-                    stmtGetint.addChild(semicn);
+                    // (
+                    TerminalNode lparent = new TerminalNode(curToken);
+                    stmtGetint.addChild(lparent);
                     nextToken();
+                    // )
+                    if (curToken.getSyntaxType() == SyntaxType.RPARENT) {
+                        TerminalNode rparent = new TerminalNode(curToken);
+                        stmtGetint.addChild(rparent);
+                        nextToken();
+                    } else {
+                        //TODO:报错
+                    }
+                    // semicn
+                    if (curToken.getSyntaxType() == SyntaxType.SEMICN) {
+                        TerminalNode semicn = new TerminalNode(curToken);
+                        stmtGetint.addChild(semicn);
+                        nextToken();
+                    } else {
+                        //TODO:缺少;
+                    }
+                    stmtNode.addChild(stmtGetint);
                 } else {
-                    //TODO:缺少;
+                    StmtAssign stmtAssign = new StmtAssign();
+                    stmtAssign.addChild(lValNode);
+                    stmtAssign.addChild(assign);
+                    //Exp
+                    ExpNode expNode = parseExp();
+                    stmtAssign.addChild(expNode);
+                    //semicn
+                    if (curToken.getSyntaxType() == SyntaxType.SEMICN) {
+                        TerminalNode semicn = new TerminalNode(curToken);
+                        stmtAssign.addChild(semicn);
+                        nextToken();
+                    } else {
+                        //TODO:缺少;
+                    }
+                    stmtNode.addChild(stmtAssign);
                 }
-                stmtNode.addChild(stmtGetint);
-            } else {
-                StmtAssign stmtAssign = new StmtAssign();
-                stmtAssign.addChild(lValNode);
-                stmtAssign.addChild(assign);
-                //Exp
-                ExpNode expNode = parseExp();
-                stmtAssign.addChild(expNode);
-                //semicn
-                if (curToken.getSyntaxType() == SyntaxType.SEMICN) {
-                    TerminalNode semicn = new TerminalNode(curToken);
-                    stmtAssign.addChild(semicn);
-                    nextToken();
-                } else {
-                    //TODO:缺少;
-                }
-                stmtNode.addChild(stmtAssign);
+            } else { //如果不是=,就去解析StmtExp
+                goBack(recordIndex);
+                StmtExp stmtExp = parseStmtExp();
+                stmtNode.addChild(stmtExp);
             }
         } else if (curToken.getSyntaxType() == SyntaxType.LBRACE) { //Block
             StmtBlock stmtBlock = parseStmtBlock();
