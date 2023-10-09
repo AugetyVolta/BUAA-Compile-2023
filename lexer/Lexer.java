@@ -331,7 +331,7 @@ public class Lexer {
         return curIndex >= sourceCode.length();
     }
 
-    public void listToken() {
+    public void display() {
         StringBuilder stringBuilder = new StringBuilder();
         for (Token token : tokenList) {
             stringBuilder.append(token.toString()).append("\n");
