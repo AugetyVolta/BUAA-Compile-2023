@@ -11,6 +11,7 @@ public class ConstExpNode extends Node {
 
     @Override
     public void addChild(Node child) {
+        super.addChild(child);
         if (child instanceof AddExpNode) {
             addExp = (AddExpNode) child;
         }

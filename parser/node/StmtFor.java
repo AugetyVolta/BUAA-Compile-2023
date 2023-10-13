@@ -1,6 +1,10 @@
 package parser.node;
 
+import error.Error;
 import lexer.token.SyntaxType;
+import symbol.SymbolTable;
+
+import java.util.ArrayList;
 
 public class StmtFor extends StmtEle {
     private TerminalNode forTk;
@@ -19,14 +23,17 @@ public class StmtFor extends StmtEle {
     }
 
     public void setForStmt1(ForStmtNode forStmt1) {
+        super.addChild(forStmt1);
         this.forStmt1 = forStmt1;
     }
 
     public void setCond(CondNode cond) {
+        super.addChild(cond);
         this.cond = cond;
     }
 
     public void setForStmt2(ForStmtNode forStmt2) {
+        super.addChild(forStmt2);
         this.forStmt2 = forStmt2;
     }
 
@@ -71,5 +78,13 @@ public class StmtFor extends StmtEle {
         sb.append(rparent.toString());
         sb.append(stmt.toString());
         return sb.toString();
+    }
+
+    //为了去检查break和continue的问题
+    @Override
+    public void checkError(ArrayList<Error> errorList, SymbolTable symbolTable) {
+        symbolTable.setLoopLevel(symbolTable.getLoopLevel() + 1);
+        super.checkError(errorList, symbolTable);
+        symbolTable.setLoopLevel(symbolTable.getLoopLevel() - 1);
     }
 }

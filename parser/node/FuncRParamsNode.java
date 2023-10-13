@@ -15,6 +15,10 @@ public class FuncRParamsNode extends Node {
 
     }
 
+    public ArrayList<ExpNode> getExps() {
+        return exps;
+    }
+
     @Override
     public void addChild(Node child) {
         super.addChild(child);

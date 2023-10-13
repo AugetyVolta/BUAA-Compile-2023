@@ -1,10 +1,14 @@
 package parser;
 
+import error.Error;
+import error.ErrorType;
 import lexer.token.SyntaxType;
 import lexer.token.Token;
 import parser.node.*;
+import symbol.SymbolTable;
 
 import java.util.ArrayList;
+import java.util.Collections;
 
 public class Parser {
     private final ArrayList<Token> tokenList;
@@ -13,10 +17,13 @@ public class Parser {
 
     private Token curToken;
 
-    public Parser(ArrayList<Token> tokenList) {
+    private ArrayList<Error> errorList;
+
+    public Parser(ArrayList<Token> tokenList, ArrayList<Error> errorList) {
         this.tokenList = tokenList;
         this.curIndex = 0;
         this.curToken = tokenList.get(this.curIndex);
+        this.errorList = errorList;
     }
 
     public boolean isFinish() {
@@ -30,12 +37,25 @@ public class Parser {
         }
     }
 
+    public Token getLastToken() {
+        return tokenList.get(curIndex - 1);
+    }
+
     //预读取，以当前为基础的后面第offset个token
     public Token preRead(int offset) {
         if (curIndex + offset < tokenList.size()) {
             return tokenList.get(curIndex + offset);
         }
         return null;
+    }
+
+    public String errorToString() {
+        Collections.sort(errorList);
+        StringBuilder sb = new StringBuilder();
+        for (Error error : errorList) {
+            sb.append(error.toString());
+        }
+        return sb.toString();
     }
 
     public void goBack(int recordIndex) {
@@ -124,8 +144,10 @@ public class Parser {
             constDeclNode.addChild(semicn);
             nextToken();
         } else {
-            //TODO:缺少分号 报错
-            return null;
+            //缺少;
+            handleErrorI(getLastToken());
+            TerminalNode semicn = new TerminalNode(new Token(0, SyntaxType.SEMICN, ";"));
+            constDeclNode.addChild(semicn);
         }
         return constDeclNode;
     }
@@ -161,7 +183,10 @@ public class Parser {
                 constDefNode.addChild(rbrack);
                 nextToken();
             } else {
-                //TODO:缺少右]
+                //缺少]
+                handleErrorK(getLastToken());
+                TerminalNode rbrack = new TerminalNode(new Token(0, SyntaxType.RBRACK, "]"));
+                constDefNode.addChild(rbrack);
             }
         }
         //=
@@ -207,7 +232,7 @@ public class Parser {
                 constInitValNode.addChild(rbrace);
                 nextToken();
             } else {
-                //TODO:缺少}
+                //缺少}
             }
         } else {
             //ConstExp
@@ -239,7 +264,10 @@ public class Parser {
             varDeclNode.addChild(semicn);
             nextToken();
         } else {
-            //TODO:缺少;
+            //缺少;
+            handleErrorI(getLastToken());
+            TerminalNode semicn = new TerminalNode(new Token(0, SyntaxType.SEMICN, ";"));
+            varDeclNode.addChild(semicn);
         }
         return varDeclNode;
     }
@@ -265,7 +293,10 @@ public class Parser {
                 varDefNode.addChild(rbrack);
                 nextToken();
             } else {
-                //TODO:缺少]
+                //缺少]
+                handleErrorK(getLastToken());
+                TerminalNode rbrack = new TerminalNode(new Token(0, SyntaxType.RBRACK, "]"));
+                varDefNode.addChild(rbrack);
             }
         }
         // =
@@ -306,7 +337,7 @@ public class Parser {
                 initValNode.addChild(rbrace);
                 nextToken();
             } else {
-                //TODO:缺少}
+                //缺少}
             }
         } else {
             //Exp
@@ -338,7 +369,7 @@ public class Parser {
         funcDefNode.addChild(lparent);
         nextToken();
         // FuncFParams
-        if (curToken.getSyntaxType() != SyntaxType.RPARENT) {
+        if (curToken.getSyntaxType() != SyntaxType.RPARENT && curToken.getSyntaxType() != SyntaxType.LBRACE) {
             FuncFParamsNode funcFParamsNode = parseFuncFParams();
             funcDefNode.addChild(funcFParamsNode);
         }
@@ -348,7 +379,10 @@ public class Parser {
             funcDefNode.addChild(rparent);
             nextToken();
         } else {
-            //TODO:缺少右括号
+            //缺少)
+            handleErrorJ(getLastToken());
+            TerminalNode rparent = new TerminalNode(new Token(0, SyntaxType.RPARENT, ")"));
+            funcDefNode.addChild(rparent);
         }
         // Block
         BlockNode blockNode = parseBlock();
@@ -404,7 +438,10 @@ public class Parser {
                 funcFParamNode.addChild(rbrack);
                 nextToken();
             } else {
-                //TODO:缺少]
+                //缺少]
+                handleErrorK(getLastToken());
+                TerminalNode rbrack = new TerminalNode(new Token(0, SyntaxType.RBRACK, "]"));
+                funcFParamNode.addChild(rbrack);
             }
             // { '[' ConstExp ']' }
             while (curToken.getSyntaxType() == SyntaxType.LBRACK) {
@@ -421,7 +458,10 @@ public class Parser {
                     funcFParamNode.addChild(rbrack1);
                     nextToken();
                 } else {
-                    //TODO:缺少]
+                    //缺少]
+                    handleErrorK(getLastToken());
+                    TerminalNode rbrack = new TerminalNode(new Token(0, SyntaxType.RBRACK, "]"));
+                    funcFParamNode.addChild(rbrack);
                 }
             }
             return funcFParamNode;
@@ -447,7 +487,7 @@ public class Parser {
             blockNode.addChild(rbrace);
             nextToken();
         } else {
-            //TODO:缺少}
+            //缺少}
         }
         return blockNode;
     }
@@ -485,7 +525,10 @@ public class Parser {
             mainFuncDefNode.addChild(rparent);
             nextToken();
         } else {
-            //TODO:缺少)
+            //缺少)
+            handleErrorJ(getLastToken());
+            TerminalNode rparent = new TerminalNode(new Token(0, SyntaxType.RPARENT, ")"));
+            mainFuncDefNode.addChild(rparent);
         }
         //Block
         BlockNode blockNode = parseBlock();
@@ -526,7 +569,10 @@ public class Parser {
                         stmtGetint.addChild(rparent);
                         nextToken();
                     } else {
-                        //TODO:报错
+                        //缺少)
+                        handleErrorJ(getLastToken());
+                        TerminalNode rparent = new TerminalNode(new Token(0, SyntaxType.RPARENT, ")"));
+                        stmtGetint.addChild(rparent);
                     }
                     // semicn
                     if (curToken.getSyntaxType() == SyntaxType.SEMICN) {
@@ -534,7 +580,10 @@ public class Parser {
                         stmtGetint.addChild(semicn);
                         nextToken();
                     } else {
-                        //TODO:缺少;
+                        //缺少;
+                        handleErrorI(getLastToken());
+                        TerminalNode semicn = new TerminalNode(new Token(0, SyntaxType.SEMICN, ";"));
+                        stmtGetint.addChild(semicn);
                     }
                     stmtNode.addChild(stmtGetint);
                 } else {
@@ -550,7 +599,10 @@ public class Parser {
                         stmtAssign.addChild(semicn);
                         nextToken();
                     } else {
-                        //TODO:缺少;
+                        //缺少;
+                        handleErrorI(getLastToken());
+                        TerminalNode semicn = new TerminalNode(new Token(0, SyntaxType.SEMICN, ";"));
+                        stmtAssign.addChild(semicn);
                     }
                     stmtNode.addChild(stmtAssign);
                 }
@@ -598,9 +650,15 @@ public class Parser {
             ExpNode expNode = parseExp();
             stmtExp.addChild(expNode);
             // ;
-            TerminalNode semicn = new TerminalNode(curToken);
-            stmtExp.addChild(semicn);
-            nextToken();
+            if (curToken.getSyntaxType() == SyntaxType.SEMICN) {
+                TerminalNode semicn = new TerminalNode(curToken);
+                stmtExp.addChild(semicn);
+                nextToken();
+            } else {
+                handleErrorI(getLastToken());
+                TerminalNode semicn = new TerminalNode(new Token(0, SyntaxType.SEMICN, ";"));
+                stmtExp.addChild(semicn);
+            }
         }
         return stmtExp;
     }
@@ -631,7 +689,10 @@ public class Parser {
             stmtIf.addChild(rparent);
             nextToken();
         } else {
-            //TODO:缺少）
+            //缺少）
+            handleErrorJ(getLastToken());
+            TerminalNode rparent = new TerminalNode(new Token(0, SyntaxType.RPARENT, ")"));
+            stmtIf.addChild(rparent);
         }
         //Stmt
         StmtNode stmtNode = parseStmt();
@@ -669,7 +730,10 @@ public class Parser {
             stmtFor.addChild(semicn);
             nextToken();
         } else {
-            //TODO:缺少;
+            //缺少;
+            handleErrorI(getLastToken());
+            TerminalNode semicn = new TerminalNode(new Token(0, SyntaxType.SEMICN, ";"));
+            stmtFor.addChild(semicn);
         }
         // [Cond]
         if (curToken.getSyntaxType() != SyntaxType.SEMICN) {
@@ -682,7 +746,10 @@ public class Parser {
             stmtFor.addChild(semicn);
             nextToken();
         } else {
-            //TODO:缺少;
+            //缺少;
+            handleErrorI(getLastToken());
+            TerminalNode semicn = new TerminalNode(new Token(0, SyntaxType.SEMICN, ";"));
+            stmtFor.addChild(semicn);
         }
         // [ForStmt]
         if (curToken.getSyntaxType() != SyntaxType.RPARENT) {
@@ -695,7 +762,10 @@ public class Parser {
             stmtFor.addChild(rparent);
             nextToken();
         } else {
-            //TODO:缺少）
+            //缺少）
+            handleErrorJ(getLastToken());
+            TerminalNode rparent = new TerminalNode(new Token(0, SyntaxType.RPARENT, ")"));
+            stmtFor.addChild(rparent);
         }
         // Stmt
         StmtNode stmtNode = parseStmt();
@@ -715,7 +785,10 @@ public class Parser {
             stmtBreak.addChild(semicn);
             nextToken();
         } else {
-            //TODO:缺少;
+            //缺少;
+            handleErrorI(getLastToken());
+            TerminalNode semicn = new TerminalNode(new Token(0, SyntaxType.SEMICN, ";"));
+            stmtBreak.addChild(semicn);
         }
         return stmtBreak;
     }
@@ -732,7 +805,10 @@ public class Parser {
             stmtContinue.addChild(semicn);
             nextToken();
         } else {
-            //TODO:缺少;
+            //缺少;
+            handleErrorI(getLastToken());
+            TerminalNode semicn = new TerminalNode(new Token(0, SyntaxType.SEMICN, ";"));
+            stmtContinue.addChild(semicn);
         }
         return stmtContinue;
     }
@@ -754,7 +830,10 @@ public class Parser {
             stmtReturn.addChild(semicn);
             nextToken();
         } else {
-            //TODO:缺少;
+            //缺少;
+            handleErrorI(getLastToken());
+            TerminalNode semicn = new TerminalNode(new Token(0, SyntaxType.SEMICN, ";"));
+            stmtReturn.addChild(semicn);
         }
         return stmtReturn;
     }
@@ -763,6 +842,7 @@ public class Parser {
         StmtPrintf stmtPrintf = new StmtPrintf();
         //printf
         TerminalNode printfTk = new TerminalNode(curToken);
+        Token printToken = curToken;
         stmtPrintf.addChild(printfTk);
         nextToken();
         // (
@@ -771,10 +851,15 @@ public class Parser {
         nextToken();
         // FormatString
         TerminalNode strcon = new TerminalNode(curToken);
+        Token formatStringToken = curToken;
         stmtPrintf.addChild(strcon);
         nextToken();
         // {','Exp}
+        int expNum = 0;
         while (curToken.getSyntaxType() == SyntaxType.COMMA) {
+            //记录exp的数量
+            expNum++;
+
             TerminalNode comma = new TerminalNode(curToken);
             stmtPrintf.addChild(comma);
             nextToken();
@@ -782,13 +867,18 @@ public class Parser {
             ExpNode expNode = parseExp();
             stmtPrintf.addChild(expNode);
         }
+        //检查A错误或L错误
+        handleErrorA_OR_L(printToken, formatStringToken, expNum);
         // )
         if (curToken.getSyntaxType() == SyntaxType.RPARENT) {
             TerminalNode rparent = new TerminalNode(curToken);
             stmtPrintf.addChild(rparent);
             nextToken();
         } else {
-            //TODO:缺少）
+            //缺少）
+            handleErrorJ(getLastToken());
+            TerminalNode rparent = new TerminalNode(new Token(0, SyntaxType.RPARENT, ")"));
+            stmtPrintf.addChild(rparent);
         }
         // ;
         if (curToken.getSyntaxType() == SyntaxType.SEMICN) {
@@ -796,7 +886,10 @@ public class Parser {
             stmtPrintf.addChild(semicn);
             nextToken();
         } else {
-            //TODO:缺少;
+            //缺少;
+            handleErrorI(getLastToken());
+            TerminalNode semicn = new TerminalNode(new Token(0, SyntaxType.SEMICN, ";"));
+            stmtPrintf.addChild(semicn);
         }
         return stmtPrintf;
     }
@@ -843,7 +936,10 @@ public class Parser {
                 lValNode.addChild(rbrack);
                 nextToken();
             } else {
-                //TODO:缺少]
+                //缺少]
+                handleErrorK(getLastToken());
+                TerminalNode rbrack = new TerminalNode(new Token(0, SyntaxType.RBRACK, "]"));
+                lValNode.addChild(rbrack);
             }
         }
         return lValNode;
@@ -865,7 +961,10 @@ public class Parser {
                 primaryExpNode.addChild(rparent);
                 nextToken();
             } else {
-                //TODO:缺少）
+                //缺少）
+                handleErrorJ(getLastToken());
+                TerminalNode rparent = new TerminalNode(new Token(0, SyntaxType.RPARENT, ")"));
+                primaryExpNode.addChild(rparent);
             }
         } else if (curToken.getSyntaxType() == SyntaxType.IDENFR) {
             LValNode lValNode = parseLVal();
@@ -905,7 +1004,12 @@ public class Parser {
                 unaryExpNode.addChild(lparent);
                 nextToken();
                 // FuncRParams
-                if (curToken.getSyntaxType() != SyntaxType.RPARENT) {
+                //FIRST集{(,ident,number,+,-,!} 但是不会出现!就不写了
+                if (curToken.getSyntaxType() == SyntaxType.LPARENT ||
+                        curToken.getSyntaxType() == SyntaxType.IDENFR ||
+                        curToken.getSyntaxType() == SyntaxType.INTCON ||
+                        curToken.getSyntaxType() == SyntaxType.PLUS ||
+                        curToken.getSyntaxType() == SyntaxType.MINU) {
                     FuncRParamsNode funcRParamsNode = parseFuncRParams();
                     unaryExpNode.addChild(funcRParamsNode);
                 }
@@ -915,7 +1019,10 @@ public class Parser {
                     unaryExpNode.addChild(rparent);
                     nextToken();
                 } else {
-                    //TODO:缺少）
+                    //缺少）
+                    handleErrorJ(getLastToken());
+                    TerminalNode rparent = new TerminalNode(new Token(0, SyntaxType.RPARENT, ")"));
+                    unaryExpNode.addChild(rparent);
                 }
             } else {
                 //LVal
@@ -1083,5 +1190,72 @@ public class Parser {
             lOrExpNode = lOrExpNode1;
         }
         return lOrExpNode;
+    }
+
+    //检查A或L错误
+    public void handleErrorA_OR_L(Token printfTk, Token formatTk, int expNum) {
+        String formatString = formatTk.getValue();
+        int formatCharNum = 0; //记录%d的数量
+        boolean flag = false;//记录是否有错误
+        int stringLen = formatString.length() - 1;
+        for (int i = 1; i < stringLen; i++) { //去除formatString前后的引号
+            char cur = formatString.charAt(i);
+            if (cur == 32 || cur == 33 || cur >= 40 && cur <= 126 || cur == '%') {
+                if (cur == '%') {
+                    if (i < stringLen - 1) {
+                        char next = formatString.charAt(i + 1);
+                        if (next == 'd') {
+                            formatCharNum++;
+                        } else {
+                            //报只有%的错
+                            flag = true;
+                        }
+                    } else {
+                        //报只有%的错
+                        flag = true;
+                    }
+                } else if (cur == '\\') {
+                    if (i < stringLen - 1) {
+                        char next = formatString.charAt(i + 1);
+                        if (next != 'n') {
+                            //报只有\的错
+                            flag = true;
+                        }
+                    } else {
+                        //报只有\的错
+                        flag = true;
+                    }
+                }
+            } else {
+                //报错有其他字符
+                flag = true;
+            }
+        }
+        if (flag) {
+            Error error = new Error(formatTk.getLine(), ErrorType.ILLEGAL_SYMBOL);
+            errorList.add(error);
+        }
+        if (formatCharNum != expNum) {
+            Error error = new Error(printfTk.getLine(), ErrorType.MISS_MATCH_IN_STRING);
+            errorList.add(error);
+        }
+    }
+
+    //缺少分号
+    public void handleErrorI(Token lastToken) {
+        Error error = new Error(lastToken.getLine(), ErrorType.LACK_OF_SEMICN);
+        errorList.add(error);
+    }
+
+    //缺少右小括号
+    public void handleErrorJ(Token lastToken) {
+        Error error = new Error(lastToken.getLine(), ErrorType.LACK_OF_RPARENT);
+        errorList.add(error);
+    }
+
+    //缺少右中括号
+    public void handleErrorK(Token lastToken) {
+        Error error = new Error(lastToken.getLine(), ErrorType.LACK_OF_RBARCK);
+        errorList.add(error);
     }
 }

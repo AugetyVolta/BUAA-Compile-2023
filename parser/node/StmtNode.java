@@ -8,6 +8,11 @@ public class StmtNode extends Node {
     public StmtNode() {
 
     }
+
+    public StmtEle getStmtEle() {
+        return stmtEle;
+    }
+
     @Override
     public void addChild(Node child) {
         super.addChild(child);

@@ -1,6 +1,11 @@
 package parser.node;
 
+import error.Error;
+import error.ErrorType;
 import lexer.token.SyntaxType;
+import symbol.SymbolTable;
+
+import java.util.ArrayList;
 
 public class StmtReturn extends StmtEle {
     private TerminalNode returnTk;
@@ -11,6 +16,14 @@ public class StmtReturn extends StmtEle {
 
     public StmtReturn() {
 
+    }
+
+    public int getLine() {
+        return returnTk.getLine();
+    }
+
+    public boolean hasExp() {
+        return exp != null;
     }
 
     @Override
@@ -36,5 +49,14 @@ public class StmtReturn extends StmtEle {
         }
         sb.append(semicn.toString());
         return sb.toString();
+    }
+
+    //错误f
+    @Override
+    public void checkError(ArrayList<Error> errorList, SymbolTable symbolTable) {
+        if (exp != null && !symbolTable.isNeedReturn()) {
+            Error error = new Error(returnTk.getLine(), ErrorType.ERROR_USED_RETURN);
+            errorList.add(error);
+        }
     }
 }

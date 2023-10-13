@@ -1,6 +1,11 @@
 package parser.node;
 
+import error.Error;
+import error.ErrorType;
 import lexer.token.SyntaxType;
+import symbol.*;
+
+import java.util.ArrayList;
 
 public class UnaryExpNode extends Node {
     private String name = "<UnaryExp>";
@@ -63,5 +68,79 @@ public class UnaryExpNode extends Node {
         }
         sb.append(name).append("\n");
         return sb.toString();
+    }
+
+    @Override
+    public void checkError(ArrayList<Error> errorList, SymbolTable symbolTable) {
+        super.checkError(errorList, symbolTable);
+        if (ident == null) { //如果ident为空，就不需要检查参数不匹配问题
+            return;
+        }
+        FuncSymbol funcSymbol = null;
+        //check c error
+        boolean flag = false;
+        SymbolTable symbolTable1 = symbolTable;
+        while (symbolTable1 != null) {
+            if (symbolTable1.hasSymbol(ident.getName()) && symbolTable1.getSymbol(ident.getName()).getSymbolType() == SymbolType.FUNC) {
+                flag = true;
+                funcSymbol = (FuncSymbol) symbolTable1.getSymbol(ident.getName());
+                break;
+            }
+            symbolTable1 = symbolTable1.getFatherTable();
+        }
+        if (!flag) {
+            Error error = new Error(ident.getLine(), ErrorType.UNDEFINED_SYMBOL);
+            errorList.add(error);
+        }
+        //check d error 函数形参只能为int类型
+        if (funcSymbol != null) {
+            int paramNum = funcSymbol.getParamNum(); //定义参数个数
+            ArrayList<Integer> dims = funcSymbol.getDims(); //定义时每个参数维度
+            if (funcRParams == null) {
+                if (paramNum > 0) {
+                    Error error = new Error(ident.getLine(), ErrorType.MIS_MATCH_PARAM_NUM);
+                    errorList.add(error);
+                }
+            } else {
+                int rParamNum = funcRParams.getExps().size(); //实际的参数个数
+                ArrayList<ExpNode> expNodes = funcRParams.getExps(); //填入的参数
+                if (rParamNum != paramNum) {
+                    Error error = new Error(ident.getLine(), ErrorType.MIS_MATCH_PARAM_NUM);
+                    errorList.add(error);
+                } else {
+                    //check e error
+                    for (int i = 0; i < paramNum; i++) {
+                        if (dims.get(i) != expNodes.get(i).getDim(symbolTable)) {
+                            Error error = new Error(ident.getLine(), ErrorType.MIS_MATCH_PARAM_TYPE);
+                            errorList.add(error);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    public int getDim(SymbolTable symbolTable) {
+        if (primaryExp != null) {
+            return primaryExp.getDim(symbolTable);
+        } else if (ident != null) { //表明是函数调用,void是-1维
+            FuncSymbol funcSymbol = null;
+            SymbolTable symbolTable1 = symbolTable;
+            while (symbolTable1 != null) {
+                if (symbolTable1.hasSymbol(ident.getName()) && symbolTable1.getSymbol(ident.getName()).getSymbolType() == SymbolType.FUNC) {
+                    funcSymbol = (FuncSymbol) symbolTable1.getSymbol(ident.getName());
+                    break;
+                }
+                symbolTable1 = symbolTable1.getFatherTable();
+            }
+            //因为每行最多一个错误，所以一定能找到
+            if (funcSymbol.getDataType() == DataType.INT) {
+                return 0;
+            } else {
+                return -1;
+            }
+        } else { //如果有UnaryOp，那一定是0维
+            return 0;
+        }
     }
 }

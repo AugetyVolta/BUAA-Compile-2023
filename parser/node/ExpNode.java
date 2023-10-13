@@ -1,5 +1,7 @@
 package parser.node;
 
+import symbol.SymbolTable;
+
 public class ExpNode extends Node {
     private String name = "<Exp>";
 
@@ -23,5 +25,9 @@ public class ExpNode extends Node {
         sb.append(addExp.toString());
         sb.append(name).append("\n");
         return sb.toString();
+    }
+
+    public int getDim(SymbolTable symbolTable) {
+        return addExp.getDim(symbolTable);
     }
 }

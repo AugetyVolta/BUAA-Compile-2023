@@ -1,5 +1,7 @@
 package parser.node;
 
+import symbol.SymbolTable;
+
 public class MulExpNode extends Node {
     private String name = "<MulExp>";
 
@@ -7,7 +9,7 @@ public class MulExpNode extends Node {
 
     private MulExpNode mulExp = null;
 
-    private TerminalNode operator=null;
+    private TerminalNode operator = null;
 
     public MulExpNode() {
 
@@ -37,5 +39,9 @@ public class MulExpNode extends Node {
         }
         sb.append(name).append("\n");
         return sb.toString();
+    }
+
+    public int getDim(SymbolTable symbolTable) {
+        return unaryExp.getDim(symbolTable);
     }
 }

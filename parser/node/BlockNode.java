@@ -1,6 +1,9 @@
 package parser.node;
 
+import error.Error;
+import error.ErrorType;
 import lexer.token.SyntaxType;
+import symbol.SymbolTable;
 
 import java.util.ArrayList;
 
@@ -13,8 +16,18 @@ public class BlockNode extends Node {
 
     private TerminalNode rbrace;
 
+    private boolean isLoop = false;
+
     public BlockNode() {
 
+    }
+
+    public void setIsLoop(boolean isLoop) {
+        this.isLoop = isLoop;
+    }
+
+    public ArrayList<BlockItemNode> getBlockItems() {
+        return blockItems;
     }
 
     @Override
@@ -41,5 +54,26 @@ public class BlockNode extends Node {
         sb.append(rbrace.toString());
         sb.append(name).append("\n");
         return sb.toString();
+    }
+
+    public void checkErrorG(ArrayList<Error> errorList) {
+        if (blockItems.size() == 0) {
+            Error error = new Error(rbrace.getLine(), ErrorType.LACK_OF_RETURN);
+            errorList.add(error);
+            return;
+        }
+        BlockItemNode blockItem = blockItems.get(blockItems.size() - 1);
+        boolean flag = false;
+        StmtNode stmtNode = blockItem.getStmt();
+        if (stmtNode != null) {
+            StmtEle stmtEle = stmtNode.getStmtEle();
+            if (stmtEle instanceof StmtReturn) {
+                flag = true;
+            }
+        }
+        if (!flag) {
+            Error error = new Error(rbrace.getLine(), ErrorType.LACK_OF_RETURN);
+            errorList.add(error);
+        }
     }
 }

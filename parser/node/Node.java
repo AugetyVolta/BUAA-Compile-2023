@@ -1,5 +1,8 @@
 package parser.node;
 
+import error.Error;
+import symbol.SymbolTable;
+
 import java.util.ArrayList;
 
 public abstract class Node {
@@ -16,5 +19,11 @@ public abstract class Node {
     @Override
     public String toString() {
         return null;
+    }
+
+    public void checkError(ArrayList<Error> errorList, SymbolTable symbolTable) {
+        for (Node child : children) {
+            child.checkError(errorList, symbolTable);
+        }
     }
 }

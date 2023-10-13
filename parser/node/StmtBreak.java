@@ -1,6 +1,11 @@
 package parser.node;
 
+import error.Error;
+import error.ErrorType;
 import lexer.token.SyntaxType;
+import symbol.SymbolTable;
+
+import java.util.ArrayList;
 
 public class StmtBreak extends StmtEle {
     private TerminalNode breakTk;
@@ -30,5 +35,12 @@ public class StmtBreak extends StmtEle {
         return sb.toString();
     }
 
-
+    //m错误
+    @Override
+    public void checkError(ArrayList<Error> errorList, SymbolTable symbolTable) {
+        if (symbolTable.getLoopLevel() == 0) { //没有在递归中
+            Error error = new Error(breakTk.getLine(), ErrorType.ERROR_USED_BREAK_OR_CONTINUE);
+            errorList.add(error);
+        }
+    }
 }

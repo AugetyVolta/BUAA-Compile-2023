@@ -1,6 +1,9 @@
 package parser.node;
 
+import error.Error;
+import error.ErrorType;
 import lexer.token.SyntaxType;
+import symbol.*;
 
 import java.util.ArrayList;
 
@@ -57,5 +60,22 @@ public class ConstDefNode extends Node {
         sb.append(name).append("\n");
         return sb.toString();
     }
+
+    @Override
+    public void checkError(ArrayList<Error> errorList, SymbolTable symbolTable) {
+        if (symbolTable.hasSymbol(ident.getName())) {
+            Error error = new Error(ident.getLine(), ErrorType.REDEFINED_SYMBOL);
+            errorList.add(error);
+        } else {
+            VarSymbol varSymbol = new VarSymbol(SymbolType.VAR,
+                    DataType.INT,
+                    ident.getName(),
+                    ident.getLine(),
+                    true,
+                    lbracks.size());
+            symbolTable.addSymbol(varSymbol);
+        }
+    }
+
 
 }

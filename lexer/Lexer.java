@@ -149,7 +149,7 @@ public class Lexer {
                     sb.append(cur);
                     curIndex++;
                 } else {
-                    if (cur == ' ') { //TODO:和上面一样，可能由运算符终结，分隔符是\n \t \r 空格
+                    if (cur == ' ') { //TODO:和上面一样，可能由运算符终结，分隔符是\n \t \r 空格，下面的break给退出了
                         curIndex++;
                         break;
                     } else {
@@ -187,7 +187,7 @@ public class Lexer {
                     sb.append(cur);
                     curIndex++;
                 } else {
-                    if (cur == ' ') { //TODO:这里+-*/也会终止，需要在错误处理时重新弄
+                    if (cur == ' ') { //TODO:这里+-*/也会终止
                         break;
                     } else {
                         //TODO:错误的数字常量
@@ -237,6 +237,7 @@ public class Lexer {
                 }
             } else {
                 //TODO:报错有其他字符
+                sb.append(cur); //错误在后面处理了，这里就直接加进去了
             }
             curIndex++;
             if (curIndex < srcLength) {

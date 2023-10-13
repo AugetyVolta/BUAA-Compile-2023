@@ -7,8 +7,13 @@ public class BlockItemNode extends Node {
 
     private StmtNode stmt = null;
 
+
     public BlockItemNode() {
 
+    }
+
+    public StmtNode getStmt() {
+        return stmt;
     }
 
     @Override

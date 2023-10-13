@@ -1,6 +1,12 @@
 package parser.node;
 
+import error.Error;
+import error.ErrorType;
 import lexer.token.SyntaxType;
+import symbol.FuncSymbol;
+import symbol.SymbolTable;
+import symbol.SymbolType;
+import symbol.VarSymbol;
 
 import java.util.ArrayList;
 
@@ -17,6 +23,14 @@ public class LValNode extends Node {
 
     public LValNode() {
 
+    }
+
+    public String getName() {
+        return ident.getName();
+    }
+
+    public int getLine() {
+        return ident.getLine();
     }
 
     @Override
@@ -48,5 +62,35 @@ public class LValNode extends Node {
         }
         sb.append(name).append("\n");
         return sb.toString();
+    }
+
+    @Override
+    public void checkError(ArrayList<Error> errorList, SymbolTable symbolTable) {
+        boolean flag = false;
+        SymbolTable symbolTable1 = symbolTable;
+        while (symbolTable1 != null) {
+            if (symbolTable1.hasSymbol(ident.getName()) && symbolTable1.getSymbol(ident.getName()).getSymbolType() == SymbolType.VAR) {
+                flag = true;
+                break;
+            }
+            symbolTable1 = symbolTable1.getFatherTable();
+        }
+        if (!flag) {
+            Error error = new Error(ident.getLine(), ErrorType.UNDEFINED_SYMBOL);
+            errorList.add(error);
+        }
+    }
+
+    public int getDim(SymbolTable symbolTable) {
+        VarSymbol varSymbol = null;
+        SymbolTable symbolTable1 = symbolTable;
+        while (symbolTable1 != null) {
+            if (symbolTable1.hasSymbol(ident.getName()) && symbolTable1.getSymbol(ident.getName()).getSymbolType() == SymbolType.VAR) {
+                varSymbol = (VarSymbol) symbolTable1.getSymbol(ident.getName());
+                break;
+            }
+            symbolTable1 = symbolTable1.getFatherTable();
+        }
+        return varSymbol.getDim() - lbracks.size();
     }
 }

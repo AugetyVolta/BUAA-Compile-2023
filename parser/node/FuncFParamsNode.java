@@ -15,6 +15,10 @@ public class FuncFParamsNode extends Node {
 
     }
 
+    public ArrayList<FuncFParamNode> getFuncFParams() {
+        return funcFParams;
+    }
+
     @Override
     public void addChild(Node child) {
         super.addChild(child);

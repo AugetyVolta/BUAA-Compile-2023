@@ -13,6 +13,14 @@ public class TerminalNode extends Node {
         this.type = token.getSyntaxType();
     }
 
+    public int getLine() {
+        return token.getLine();
+    }
+
+    public String getName() {
+        return token.getValue();
+    }
+
     @Override
     public String toString() {
         return token.toString() + "\n";

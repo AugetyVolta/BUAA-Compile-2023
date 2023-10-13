@@ -1,6 +1,11 @@
 package parser.node;
 
+import error.Error;
+import error.ErrorType;
 import lexer.token.SyntaxType;
+import symbol.SymbolTable;
+
+import java.util.ArrayList;
 
 public class StmtContinue extends StmtEle {
     private TerminalNode continueTk;
@@ -28,5 +33,14 @@ public class StmtContinue extends StmtEle {
         sb.append(continueTk.toString());
         sb.append(semicn.toString());
         return sb.toString();
+    }
+
+    //m错误
+    @Override
+    public void checkError(ArrayList<Error> errorList, SymbolTable symbolTable) {
+        if (symbolTable.getLoopLevel() == 0) { //没有在递归中
+            Error error = new Error(continueTk.getLine(), ErrorType.ERROR_USED_BREAK_OR_CONTINUE);
+            errorList.add(error);
+        }
     }
 }

@@ -1,6 +1,7 @@
 package parser.node;
 
 import lexer.token.SyntaxType;
+import symbol.SymbolTable;
 
 public class PrimaryExpNode extends Node {
     private String name = "<PrimaryExp>";
@@ -51,5 +52,15 @@ public class PrimaryExpNode extends Node {
         }
         sb.append(name).append("\n");
         return sb.toString();
+    }
+
+    public int getDim(SymbolTable symbolTable) {
+        if (exp != null) {
+            return exp.getDim(symbolTable);
+        } else if (lVal != null) {
+            return lVal.getDim(symbolTable);
+        } else { //number
+            return 0;
+        }
     }
 }

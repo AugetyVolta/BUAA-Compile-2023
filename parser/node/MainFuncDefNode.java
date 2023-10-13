@@ -1,6 +1,10 @@
 package parser.node;
 
+import error.Error;
 import lexer.token.SyntaxType;
+import symbol.SymbolTable;
+
+import java.util.ArrayList;
 
 public class MainFuncDefNode extends Node {
     private String name = "<MainFuncDef>";
@@ -47,5 +51,15 @@ public class MainFuncDefNode extends Node {
         sb.append(block.toString());
         sb.append(name).append("\n");
         return sb.toString();
+    }
+
+    @Override
+    public void checkError(ArrayList<Error> errorList, SymbolTable symbolTable) {
+        //定义新符号表，开始处理形参和block
+        SymbolTable newSymbolTable = new SymbolTable(symbolTable);
+        newSymbolTable.setNeedReturn(true);
+        //处理g错误
+        block.checkErrorG(errorList);
+        block.checkError(errorList, newSymbolTable);
     }
 }
