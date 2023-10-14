@@ -6,7 +6,6 @@ import error.Error;
 import symbol.SymbolTable;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 
 import static utils.MyConfig.*;
@@ -14,18 +13,23 @@ import static utils.MyIO.writeFile;
 
 public class Compiler {
     public static void main(String[] args) {
+        //全局错误表
         ArrayList<Error> errorList = new ArrayList<>();
+        //顶层符号表
         SymbolTable symbolTable = new SymbolTable(null);
-        Lexer lexer = new Lexer("testfile.txt");
+        //lexer
+        Lexer lexer = new Lexer(filePath);
         ArrayList<Token> tokenList = lexer.getTokenList();
         if (lexicalOutput) {
             lexer.display();
         }
+        //parser
         Parser parser = new Parser(tokenList, errorList);
         CompUnitNode compUnitNode = parser.parseCompUnit();
         if (parseOutput) {
-            writeFile("output.txt", compUnitNode.toString());
+            writeFile(outputPath, compUnitNode.toString());
         }
+        //error handler
         if (errorOutput) {
             compUnitNode.checkError(errorList, symbolTable);
             Collections.sort(errorList);
@@ -33,7 +37,7 @@ public class Compiler {
             for (Error error : errorList) {
                 sb.append(error.toString());
             }
-            writeFile("error.txt", sb.toString());
+            writeFile(errorOutputPath, sb.toString());
         }
     }
 }

@@ -33,7 +33,7 @@ public class CompUnitNode extends Node {
             sb.append(funcDefNode.toString());
         }
         sb.append(mainFuncDef.toString());
-        sb.append(this.name);
+        sb.append(this.name).append("\n");
         return sb.toString();
     }
 }
