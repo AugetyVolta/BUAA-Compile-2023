@@ -338,7 +338,7 @@ public class Parser {
         funcDefNode.addChild(lparent);
         nextToken();
         // FuncFParams
-        if (curToken.getSyntaxType() != SyntaxType.RPARENT) {
+        if (curToken.getSyntaxType() != SyntaxType.RPARENT && curToken.getSyntaxType() != SyntaxType.LBRACE) {
             FuncFParamsNode funcFParamsNode = parseFuncFParams();
             funcDefNode.addChild(funcFParamsNode);
         }
@@ -598,9 +598,13 @@ public class Parser {
             ExpNode expNode = parseExp();
             stmtExp.addChild(expNode);
             // ;
-            TerminalNode semicn = new TerminalNode(curToken);
-            stmtExp.addChild(semicn);
-            nextToken();
+            if (curToken.getSyntaxType() == SyntaxType.SEMICN) {
+                TerminalNode semicn = new TerminalNode(curToken);
+                stmtExp.addChild(semicn);
+                nextToken();
+            } else {
+                //TODO:缺失;
+            }
         }
         return stmtExp;
     }
@@ -905,7 +909,12 @@ public class Parser {
                 unaryExpNode.addChild(lparent);
                 nextToken();
                 // FuncRParams
-                if (curToken.getSyntaxType() != SyntaxType.RPARENT) {
+                //FIRST集{(,ident,number,+,-,!} 但是不会出现!就不写了
+                if (curToken.getSyntaxType() == SyntaxType.LPARENT ||
+                        curToken.getSyntaxType() == SyntaxType.IDENFR ||
+                        curToken.getSyntaxType() == SyntaxType.INTCON ||
+                        curToken.getSyntaxType() == SyntaxType.PLUS ||
+                        curToken.getSyntaxType() == SyntaxType.MINU) {
                     FuncRParamsNode funcRParamsNode = parseFuncRParams();
                     unaryExpNode.addChild(funcRParamsNode);
                 }
