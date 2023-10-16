@@ -19,14 +19,17 @@ public class StmtFor extends StmtEle {
     }
 
     public void setForStmt1(ForStmtNode forStmt1) {
+        super.addChild(forStmt1);
         this.forStmt1 = forStmt1;
     }
 
     public void setCond(CondNode cond) {
+        super.addChild(cond);
         this.cond = cond;
     }
 
     public void setForStmt2(ForStmtNode forStmt2) {
+        super.addChild(forStmt2);
         this.forStmt2 = forStmt2;
     }
 
