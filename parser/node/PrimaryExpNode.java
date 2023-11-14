@@ -63,4 +63,14 @@ public class PrimaryExpNode extends Node {
             return 0;
         }
     }
+
+    public int execute() {
+        if (exp != null) {
+            return exp.execute();
+        } else if (lVal != null) {
+            return lVal.execute();
+        } else {
+            return number.execute();
+        }
+    }
 }

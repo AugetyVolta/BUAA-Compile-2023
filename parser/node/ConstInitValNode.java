@@ -60,4 +60,26 @@ public class ConstInitValNode extends Node {
         sb.append(name).append("\n");
         return sb.toString();
     }
+
+    //计算constInitVal为constExp时的值
+    public int execute() {
+        if (constExp != null) {
+            return constExp.execute();
+        }
+        return 0;
+    }
+
+    //获取数组元素，最后串成一维数组
+    public ArrayList<Integer> executeArrayEle() {
+        ArrayList<Integer> arrayEle = new ArrayList<>();
+        if (constExp != null) {
+            arrayEle.add(constExp.execute());
+        } else {
+            for (ConstInitValNode constInitValNode : constInitVals) {
+                arrayEle.addAll(constInitValNode.executeArrayEle());
+            }
+        }
+        return arrayEle;
+    }
+
 }

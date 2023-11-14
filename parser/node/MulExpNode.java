@@ -44,4 +44,19 @@ public class MulExpNode extends Node {
     public int getDim(SymbolTable symbolTable) {
         return unaryExp.getDim(symbolTable);
     }
+
+    public int execute() {
+        if (mulExp != null) {
+            if (operator.getName().equals("*")) {
+                return mulExp.execute() * unaryExp.execute();
+            } else if (operator.getName().equals("/")) {
+                return mulExp.execute() / unaryExp.execute();
+            } else if (operator.getName().equals("%")) {
+                return mulExp.execute() % unaryExp.execute();
+            }
+        } else {
+            return unaryExp.execute();
+        }
+        return 0;
+    }
 }

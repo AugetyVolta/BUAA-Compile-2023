@@ -3,6 +3,7 @@ package parser.node;
 import error.Error;
 import error.ErrorType;
 import lexer.token.SyntaxType;
+import symbol.SymbolManager;
 import symbol.SymbolTable;
 
 import java.util.ArrayList;
@@ -37,8 +38,9 @@ public class StmtContinue extends StmtEle {
 
     //m错误
     @Override
-    public void checkError(ArrayList<Error> errorList, SymbolTable symbolTable) {
-        if (symbolTable.getLoopLevel() == 0) { //没有在递归中
+    public void checkError(ArrayList<Error> errorList) {
+        int loopLevel = SymbolManager.Manager.getLoopLevel();
+        if (loopLevel == 0) { //没有在递归中
             Error error = new Error(continueTk.getLine(), ErrorType.ERROR_USED_BREAK_OR_CONTINUE);
             errorList.add(error);
         }

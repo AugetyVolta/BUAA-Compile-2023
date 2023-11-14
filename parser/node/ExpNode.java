@@ -30,4 +30,8 @@ public class ExpNode extends Node {
     public int getDim(SymbolTable symbolTable) {
         return addExp.getDim(symbolTable);
     }
+
+    public int execute() {
+        return addExp.execute();
+    }
 }

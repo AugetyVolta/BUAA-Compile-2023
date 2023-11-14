@@ -3,6 +3,7 @@ package parser.node;
 import error.Error;
 import error.ErrorType;
 import lexer.token.SyntaxType;
+import symbol.SymbolManager;
 import symbol.SymbolTable;
 
 import java.util.ArrayList;
@@ -53,7 +54,8 @@ public class StmtReturn extends StmtEle {
 
     //错误f
     @Override
-    public void checkError(ArrayList<Error> errorList, SymbolTable symbolTable) {
+    public void checkError(ArrayList<Error> errorList) {
+        SymbolTable symbolTable = SymbolManager.Manager.getCurSymbolTable();
         if (exp != null && !symbolTable.isNeedReturn()) {
             Error error = new Error(returnTk.getLine(), ErrorType.ERROR_USED_RETURN);
             errorList.add(error);

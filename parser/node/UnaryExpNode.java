@@ -71,24 +71,16 @@ public class UnaryExpNode extends Node {
     }
 
     @Override
-    public void checkError(ArrayList<Error> errorList, SymbolTable symbolTable) {
-        super.checkError(errorList, symbolTable);
+    public void checkError(ArrayList<Error> errorList) {
+        SymbolTable symbolTable = SymbolManager.Manager.getCurSymbolTable();
+
+        super.checkError(errorList);
         if (ident == null) { //如果ident为空，就不需要检查参数不匹配问题
             return;
         }
-        FuncSymbol funcSymbol = null;
+        FuncSymbol funcSymbol = (FuncSymbol) symbolTable.getSymbol(ident.getName(), SymbolType.FUNC);
         //check c error
-        boolean flag = false;
-        SymbolTable symbolTable1 = symbolTable;
-        while (symbolTable1 != null) {
-            if (symbolTable1.hasSymbol(ident.getName()) && symbolTable1.getSymbol(ident.getName()).getSymbolType() == SymbolType.FUNC) {
-                flag = true;
-                funcSymbol = (FuncSymbol) symbolTable1.getSymbol(ident.getName());
-                break;
-            }
-            symbolTable1 = symbolTable1.getFatherTable();
-        }
-        if (!flag) {
+        if (funcSymbol == null) {
             Error error = new Error(ident.getLine(), ErrorType.UNDEFINED_SYMBOL);
             errorList.add(error);
         }
@@ -142,5 +134,22 @@ public class UnaryExpNode extends Node {
         } else { //如果有UnaryOp，那一定是0维
             return 0;
         }
+    }
+
+    public int execute() {
+        if (primaryExp != null) {
+            return primaryExp.execute();
+        } else if (unaryOp != null) {
+            if (unaryOp.getName().equals("+")) {
+                return unaryExp.execute();
+            } else if (unaryOp.getName().equals("-")) {
+                return -1 * unaryExp.execute();
+            }
+        }
+        //函数调用不是编译时能求值的类型
+//      else if (ident != null) {
+//
+//      }
+        return 0;
     }
 }

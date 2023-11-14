@@ -2,6 +2,7 @@ package parser.node;
 
 import error.Error;
 import lexer.token.SyntaxType;
+import symbol.SymbolManager;
 import symbol.SymbolTable;
 
 import java.util.ArrayList;
@@ -54,12 +55,16 @@ public class MainFuncDefNode extends Node {
     }
 
     @Override
-    public void checkError(ArrayList<Error> errorList, SymbolTable symbolTable) {
+    public void checkError(ArrayList<Error> errorList) {
+        SymbolTable symbolTable = SymbolManager.Manager.getCurSymbolTable();
         //定义新符号表，开始处理形参和block
-        SymbolTable newSymbolTable = new SymbolTable(symbolTable);
+        SymbolManager.Manager.enterBlock();
+        SymbolTable newSymbolTable = SymbolManager.Manager.getCurSymbolTable();
         newSymbolTable.setNeedReturn(true);
         //处理g错误
         block.checkErrorG(errorList);
-        block.checkError(errorList, newSymbolTable);
+        block.checkError(errorList);
+        //退出块
+        SymbolManager.Manager.leaveBlock();
     }
 }

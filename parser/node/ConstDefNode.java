@@ -7,7 +7,10 @@ import symbol.*;
 
 import java.util.ArrayList;
 
+import static utils.MyConfig.onDebug;
+
 public class ConstDefNode extends Node {
+    private VarSymbol varSymbol;
     private String name = "<ConstDef>";
 
     private TerminalNode ident;
@@ -62,7 +65,8 @@ public class ConstDefNode extends Node {
     }
 
     @Override
-    public void checkError(ArrayList<Error> errorList, SymbolTable symbolTable) {
+    public void checkError(ArrayList<Error> errorList) {
+        SymbolTable symbolTable = SymbolManager.Manager.getCurSymbolTable();
         if (symbolTable.hasSymbol(ident.getName())) {
             Error error = new Error(ident.getLine(), ErrorType.REDEFINED_SYMBOL);
             errorList.add(error);
@@ -74,6 +78,30 @@ public class ConstDefNode extends Node {
                     true,
                     lbracks.size());
             symbolTable.addSymbol(varSymbol);
+            this.varSymbol = varSymbol;
+            int dim = lbracks.size();
+            if (dim == 0) { //常量
+                varSymbol.setInitVal(constInitVal.execute());
+            } else if (dim == 1) { //一维数组
+                varSymbol.setSize(0, constExps.get(0).execute()); //设置数组的大小
+                varSymbol.setArrayInitVal(constInitVal.executeArrayEle());
+            } else if (dim == 2) { //二维数组
+                varSymbol.setSize(constExps.get(0).execute(), constExps.get(1).execute()); //设置数组的大小
+                varSymbol.setArrayInitVal(constInitVal.executeArrayEle());
+            }
+
+            if (onDebug) {
+                StringBuilder sb = new StringBuilder();
+                sb.append(ident.getName()).append(" ");
+                sb.append(SymbolManager.Manager.isGlobal()).append(" ");
+                sb.append(lbracks.size()).append(" ");
+                sb.append("size").append("[" + varSymbol.getSize()[0] + "]").append("[" + varSymbol.getSize()[1] + "]").append("\n");
+                if (dim == 0)
+                    sb.append(varSymbol.getInitVal()).append("\n");
+                else
+                    sb.append(varSymbol.getArrayInitVal()).append("\n");
+                System.out.print(sb.toString());
+            }
         }
     }
 

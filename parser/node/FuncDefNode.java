@@ -3,14 +3,13 @@ package parser.node;
 import error.ErrorType;
 import error.Error;
 import lexer.token.SyntaxType;
-import symbol.DataType;
-import symbol.FuncSymbol;
-import symbol.SymbolTable;
-import symbol.SymbolType;
+import symbol.*;
 
 import java.util.ArrayList;
 
 public class FuncDefNode extends Node {
+    private FuncSymbol funcSymbol;
+
     private String name = "<FuncDef>";
 
     private FuncTypeNode funcType;
@@ -65,7 +64,9 @@ public class FuncDefNode extends Node {
     }
 
     @Override
-    public void checkError(ArrayList<Error> errorList, SymbolTable symbolTable) {
+    public void checkError(ArrayList<Error> errorList) {
+        SymbolTable symbolTable = SymbolManager.Manager.getCurSymbolTable();
+
         if (symbolTable.hasSymbol(ident.getName())) { //error b
             Error error = new Error(ident.getLine(), ErrorType.REDEFINED_SYMBOL);
             errorList.add(error);
@@ -77,6 +78,7 @@ public class FuncDefNode extends Node {
                     ident.getName(),
                     ident.getLine());
             symbolTable.addSymbol(funcSymbol);
+            this.funcSymbol = funcSymbol;//存储当前符号表符号存储数据
             if (funcFParams != null) { //如果函数有参数
                 ArrayList<FuncFParamNode> paramNodes = funcFParams.getFuncFParams();
                 //为形参设置维度
@@ -85,16 +87,23 @@ public class FuncDefNode extends Node {
                 }
             }
         }
+
         //定义新符号表，开始处理形参和block
-        SymbolTable newSymbolTable = new SymbolTable(symbolTable);
+        SymbolManager.Manager.enterBlock();
+        //设置是否需要返回
+        SymbolTable newSymbolTable = SymbolManager.Manager.getCurSymbolTable();
         newSymbolTable.setNeedReturn(funcType.getFuncType() == SyntaxType.INTTK);
+
         if (funcFParams != null) {
-            funcFParams.checkError(errorList, newSymbolTable);
+            funcFParams.checkError(errorList);
         }
         //处理g错误
         if (funcType.getFuncType() == SyntaxType.INTTK) {
             block.checkErrorG(errorList);
         }
-        block.checkError(errorList, newSymbolTable);
+        block.checkError(errorList);
+
+        //退出符号表
+        SymbolManager.Manager.leaveBlock();
     }
 }

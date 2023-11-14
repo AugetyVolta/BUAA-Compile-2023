@@ -61,4 +61,22 @@ public class InitValNode extends Node {
         sb.append(name).append("\n");
         return sb.toString();
     }
+
+    public int execute() {
+        return exp.execute();
+    }
+
+    //获取数组元素，最后串成一维数组
+    public ArrayList<Integer> executeArrayEle() {
+        ArrayList<Integer> arrayEle = new ArrayList<>();
+        //说明不是数组初始化
+        if (lbrace == null) {
+            arrayEle.add(exp.execute());
+        } else {
+            for (InitValNode initValNode : initVals) {
+                arrayEle.addAll(initValNode.executeArrayEle());
+            }
+        }
+        return arrayEle;
+    }
 }

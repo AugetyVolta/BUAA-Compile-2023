@@ -4,6 +4,7 @@ import error.Error;
 import error.ErrorType;
 import lexer.token.SyntaxType;
 import symbol.Symbol;
+import symbol.SymbolManager;
 import symbol.SymbolTable;
 import symbol.VarSymbol;
 
@@ -47,18 +48,11 @@ public class StmtAssign extends StmtEle {
     }
 
     @Override
-    public void checkError(ArrayList<Error> errorList, SymbolTable symbolTable) {
-        super.checkError(errorList, symbolTable); //首先去看lVal的错误
+    public void checkError(ArrayList<Error> errorList) {
+        SymbolTable symbolTable = SymbolManager.Manager.getCurSymbolTable();
+        super.checkError(errorList); //首先去看lVal的错误
         String name = lVal.getName();
-        Symbol symbol = null;
-        SymbolTable symbolTable1 = symbolTable;
-        while (symbolTable1 != null) {
-            if (symbolTable1.hasSymbol(name)) {
-                symbol = symbolTable1.getSymbol(name);
-                break;
-            }
-            symbolTable1 = symbolTable1.getFatherTable();
-        }
+        Symbol symbol = symbolTable.getSymbol(name);
         if (symbol instanceof VarSymbol) { //h,给常量赋值
             if (((VarSymbol) symbol).isConst()) {
                 Error error = new Error(lVal.getLine(), ErrorType.ASSIGN_TO_CONST);

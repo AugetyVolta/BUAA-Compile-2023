@@ -3,10 +3,7 @@ package parser.node;
 import error.Error;
 import error.ErrorType;
 import lexer.token.SyntaxType;
-import symbol.FuncSymbol;
-import symbol.SymbolTable;
-import symbol.SymbolType;
-import symbol.VarSymbol;
+import symbol.*;
 
 import java.util.ArrayList;
 
@@ -65,17 +62,11 @@ public class LValNode extends Node {
     }
 
     @Override
-    public void checkError(ArrayList<Error> errorList, SymbolTable symbolTable) {
-        boolean flag = false;
-        SymbolTable symbolTable1 = symbolTable;
-        while (symbolTable1 != null) {
-            if (symbolTable1.hasSymbol(ident.getName()) && symbolTable1.getSymbol(ident.getName()).getSymbolType() == SymbolType.VAR) {
-                flag = true;
-                break;
-            }
-            symbolTable1 = symbolTable1.getFatherTable();
-        }
-        if (!flag) {
+    public void checkError(ArrayList<Error> errorList) {
+        SymbolTable symbolTable = SymbolManager.Manager.getCurSymbolTable();
+        String name = ident.getName();
+        //没找到
+        if (symbolTable.getSymbol(name, SymbolType.VAR) == null) {
             Error error = new Error(ident.getLine(), ErrorType.UNDEFINED_SYMBOL);
             errorList.add(error);
         }
@@ -92,5 +83,26 @@ public class LValNode extends Node {
             symbolTable1 = symbolTable1.getFatherTable();
         }
         return varSymbol.getDim() - lbracks.size();
+    }
+
+    @Override
+    public int execute() {
+        VarSymbol valSymbol = (VarSymbol) SymbolManager.Manager.getCurSymbolTable().getSymbol(ident.getName(), SymbolType.VAR);
+        if (valSymbol == null) {
+            return 0;
+        }
+        //用于获取引用的下标
+        ArrayList<Integer> lens = new ArrayList<>();
+        for (ExpNode expNode : exps) {
+            lens.add(expNode.execute());
+        }
+        if (valSymbol.getDim() == 0) {//常数
+            return valSymbol.getInitVal();
+        } else if (valSymbol.getDim() == 1) {//一维数组
+            return valSymbol.getInitVal(lens.get(0));
+        } else if (valSymbol.getDim() == 2) {//二维数组
+            return valSymbol.getInitVal(lens.get(0), lens.get(1));
+        }
+        return 0;
     }
 }

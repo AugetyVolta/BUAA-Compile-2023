@@ -11,6 +11,10 @@ public class UnaryOpNode extends Node {
         this.token = token;
     }
 
+    public String getName() {
+        return token.getValue();
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();

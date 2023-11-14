@@ -2,6 +2,8 @@ package parser.node;
 
 import symbol.SymbolTable;
 
+import java.util.Objects;
+
 public class AddExpNode extends Node {
     private String name = "<AddExp>";
 
@@ -43,6 +45,20 @@ public class AddExpNode extends Node {
 
     public int getDim(SymbolTable symbolTable) {
         return mulExp.getDim(symbolTable);
+    }
+
+    public int execute() {
+        if (addExp != null) {
+            if (operator.getName().equals("+")) {
+                return addExp.execute() + mulExp.execute();
+            }
+            else if(operator.getName().equals("-")){
+                return addExp.execute() - mulExp.execute();
+            }
+        } else {
+            return mulExp.execute();
+        }
+        return 0;
     }
 
 

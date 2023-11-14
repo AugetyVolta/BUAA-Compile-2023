@@ -24,4 +24,8 @@ public class ConstExpNode extends Node {
         sb.append(name).append("\n");
         return sb.toString();
     }
+
+    public int execute() {
+        return addExp.execute();
+    }
 }

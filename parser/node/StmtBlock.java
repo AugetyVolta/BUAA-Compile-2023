@@ -1,6 +1,7 @@
 package parser.node;
 
 import error.Error;
+import symbol.SymbolManager;
 import symbol.SymbolTable;
 
 import java.util.ArrayList;
@@ -26,10 +27,9 @@ public class StmtBlock extends StmtEle {
     }
 
     @Override
-    public void checkError(ArrayList<Error> errorList, SymbolTable symbolTable) {
-        SymbolTable newSymbolTable = new SymbolTable(symbolTable);
-        // newSymbolTable.setNeedReturn(symbolTable.isNeedReturn());
-        // newSymbolTable.setLoopLevel(symbolTable.getLoopLevel()); 这两个本身已经继承了
-        super.checkError(errorList, newSymbolTable);
+    public void checkError(ArrayList<Error> errorList) {
+        SymbolManager.Manager.enterBlock();
+        super.checkError(errorList);
+        SymbolManager.Manager.leaveBlock();
     }
 }

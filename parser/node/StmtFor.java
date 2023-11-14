@@ -2,6 +2,7 @@ package parser.node;
 
 import error.Error;
 import lexer.token.SyntaxType;
+import symbol.SymbolManager;
 import symbol.SymbolTable;
 
 import java.util.ArrayList;
@@ -82,9 +83,9 @@ public class StmtFor extends StmtEle {
 
     //为了去检查break和continue的问题
     @Override
-    public void checkError(ArrayList<Error> errorList, SymbolTable symbolTable) {
-        symbolTable.setLoopLevel(symbolTable.getLoopLevel() + 1);
-        super.checkError(errorList, symbolTable);
-        symbolTable.setLoopLevel(symbolTable.getLoopLevel() - 1);
+    public void checkError(ArrayList<Error> errorList) {
+        SymbolManager.Manager.enterLoop();
+        super.checkError(errorList);
+        SymbolManager.Manager.leaveLoop();
     }
 }

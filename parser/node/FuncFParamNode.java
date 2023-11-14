@@ -3,10 +3,7 @@ package parser.node;
 import error.Error;
 import error.ErrorType;
 import lexer.token.SyntaxType;
-import symbol.DataType;
-import symbol.SymbolTable;
-import symbol.SymbolType;
-import symbol.VarSymbol;
+import symbol.*;
 
 import java.util.ArrayList;
 
@@ -70,7 +67,8 @@ public class FuncFParamNode extends Node {
     }
 
     @Override
-    public void checkError(ArrayList<Error> errorList, SymbolTable symbolTable) {
+    public void checkError(ArrayList<Error> errorList) {
+        SymbolTable symbolTable = SymbolManager.Manager.getCurSymbolTable();
         if (symbolTable.hasSymbol(ident.getName())) { //error b
             Error error = new Error(ident.getLine(), ErrorType.REDEFINED_SYMBOL);
             errorList.add(error);

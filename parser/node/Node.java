@@ -21,9 +21,13 @@ public abstract class Node {
         return null;
     }
 
-    public void checkError(ArrayList<Error> errorList, SymbolTable symbolTable) {
+    public void checkError(ArrayList<Error> errorList) {
         for (Node child : children) {
-            child.checkError(errorList, symbolTable);
+            child.checkError(errorList);
         }
+    }
+
+    public int execute() {
+        return 0;
     }
 }

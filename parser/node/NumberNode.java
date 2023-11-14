@@ -2,7 +2,7 @@ package parser.node;
 
 import lexer.token.Token;
 
-public class NumberNode extends Node{
+public class NumberNode extends Node {
     private String name = "<Number>";
 
     private Token intConst;
@@ -17,6 +17,11 @@ public class NumberNode extends Node{
         sb.append(intConst.toString()).append("\n");
         sb.append(name).append("\n");
         return sb.toString();
+    }
+
+
+    public int execute() {
+        return Integer.parseInt(intConst.getValue());
     }
 
 

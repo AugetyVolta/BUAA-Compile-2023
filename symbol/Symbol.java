@@ -9,6 +9,8 @@ public class Symbol {
 
     private int line; //Symbol所处的行
 
+    private boolean isGlobal;//是否全局变量
+
     public Symbol() {
 
     }
@@ -50,5 +52,13 @@ public class Symbol {
 
     public int getLine() {
         return line;
+    }
+
+    public void setGlobal(boolean global) {
+        isGlobal = global;
+    }
+
+    public boolean isGlobal() {
+        return isGlobal;
     }
 }
