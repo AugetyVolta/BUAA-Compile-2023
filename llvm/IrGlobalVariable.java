@@ -29,6 +29,12 @@ public class IrGlobalVariable extends IrValue {
         initValues.add(constInt);
     }
 
+    public void setInitValues(ArrayList<IrConstInt> initValues) {
+        if (initValues != null) {
+            this.initValues = initValues;
+        }
+    }
+
     public int getDim() {//获取维度
         return dim;
     }

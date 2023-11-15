@@ -1,5 +1,7 @@
 package symbol;
 
+import llvm.IrValue;
+
 import java.util.ArrayList;
 
 public class VarSymbol extends Symbol {
@@ -12,6 +14,8 @@ public class VarSymbol extends Symbol {
     private int initVal;//存储变量常量的初值
 
     private ArrayList<Integer> arrayInitVal = new ArrayList<>();//存储数组初值，将二维数组变为一维数组
+
+    private IrValue llvmValue;
 
     public VarSymbol(SymbolType symbolType, DataType dataType, String name, int line, boolean isConst, int dim) {
         super(symbolType, dataType, name, line);
@@ -69,5 +73,13 @@ public class VarSymbol extends Symbol {
 
     public void setArrayInitVal(ArrayList<Integer> arrayInitVal) {
         this.arrayInitVal = arrayInitVal;
+    }
+
+    public void setLlvmValue(IrValue llvmValue) {
+        this.llvmValue = llvmValue;
+    }
+
+    public IrValue getLlvmValue() {
+        return llvmValue;
     }
 }

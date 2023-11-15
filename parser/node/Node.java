@@ -1,6 +1,7 @@
 package parser.node;
 
 import error.Error;
+import llvm.IrValue;
 import symbol.SymbolTable;
 
 import java.util.ArrayList;
@@ -29,5 +30,13 @@ public abstract class Node {
 
     public int execute() {
         return 0;
+    }
+
+
+    public IrValue genIR() {
+        for (Node node : children) {
+            node.genIR();
+        }
+        return null;
     }
 }

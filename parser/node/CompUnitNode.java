@@ -1,5 +1,8 @@
 package parser.node;
 
+import llvm.IrValue;
+import symbol.SymbolManager;
+
 import java.util.ArrayList;
 
 public class CompUnitNode extends Node {
@@ -35,5 +38,13 @@ public class CompUnitNode extends Node {
         sb.append(mainFuncDef.toString());
         sb.append(this.name).append("\n");
         return sb.toString();
+    }
+
+
+    @Override
+    public IrValue genIR() {
+        SymbolManager.Manager.resetSymbolTable();
+        super.genIR();
+        return null;
     }
 }

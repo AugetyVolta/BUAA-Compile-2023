@@ -5,6 +5,7 @@ public enum IrInstrType {
     SUB,
     MUL,
     SDIV,
+    SREM, //mod
     ICMP,
     AND,
     OR,
@@ -18,6 +19,9 @@ public enum IrInstrType {
     TRUNC,
     BR,
     RET,
+    GETINT,//getint
+    PUTINT,//putint
+    PUTCH,//putch
     EQ,// ==
     NE,// !=
     SLT, // < 有符号比较
