@@ -2,6 +2,11 @@ package parser.node;
 
 import error.Error;
 import lexer.token.SyntaxType;
+import llvm.IrBuilder;
+import llvm.IrFunction;
+import llvm.IrValue;
+import llvm.type.IrIntegetType;
+import symbol.DataType;
 import symbol.SymbolManager;
 import symbol.SymbolTable;
 
@@ -66,5 +71,21 @@ public class MainFuncDefNode extends Node {
         block.checkError(errorList);
         //退出块
         SymbolManager.Manager.leaveBlock();
+    }
+
+    @Override
+    public IrValue buildIR() {
+        SymbolTable symbolTable = SymbolManager.Manager.getCurSymbolTable();
+        IrIntegetType retValueType = IrIntegetType.INT32;
+        IrFunction irFunction = IrBuilder.IRBUILDER.buildFunction("main", retValueType);
+        //定义新符号表
+        SymbolManager.Manager.enterBlock();
+        SymbolTable newSymbolTable = SymbolManager.Manager.getCurSymbolTable();
+        newSymbolTable.setNeedReturn(true);
+        //去build函数中的block
+        block.buildIR();
+        //退出块
+        SymbolManager.Manager.leaveBlock();
+        return null;
     }
 }

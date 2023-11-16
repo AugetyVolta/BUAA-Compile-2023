@@ -1,5 +1,8 @@
 package parser.node;
 
+import llvm.IrBasicBlock;
+import llvm.IrBuilder;
+
 public class LOrExpNode extends Node {
     private String name = "<LOrExp>";
 
@@ -37,6 +40,19 @@ public class LOrExpNode extends Node {
         }
         sb.append(name).append("\n");
         return sb.toString();
+    }
+
+    public void buildLOrExpIR(IrBasicBlock trueBlock, IrBasicBlock falseBlock) {
+        if (lOrExp != null) {  //LOrExp '||' LAndExp
+            IrBasicBlock enterForLOrExp = IrBuilder.IRBUILDER.getCurBasicBlock();//进入函数时LOrExp处的block,其实就是LOrExp应该放的位置
+            IrBasicBlock enterForLAndExp = IrBuilder.IRBUILDER.buildBasicBlock();
+            lAndExp.buildLAndExpIR(trueBlock, falseBlock);
+            //将当前的指令块设置为进来时的block,开始构建LOrExp
+            IrBuilder.IRBUILDER.setCurBasicBlock(enterForLOrExp);
+            lOrExp.buildLOrExpIR(trueBlock, enterForLAndExp);//如果为true跳转到trueBlock,否则到LAndExp
+        } else { //LAndExp
+            lAndExp.buildLAndExpIR(trueBlock, falseBlock);
+        }
     }
 
 }

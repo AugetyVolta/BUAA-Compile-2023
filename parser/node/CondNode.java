@@ -1,5 +1,8 @@
 package parser.node;
 
+import llvm.IrBasicBlock;
+import llvm.IrBuilder;
+
 public class CondNode extends Node {
     private String name = "<Cond>";
 
@@ -23,5 +26,9 @@ public class CondNode extends Node {
         sb.append(lOrExp.toString());
         sb.append(name).append("\n");
         return sb.toString();
+    }
+
+    public void buildCondIR(IrBasicBlock trueBlock, IrBasicBlock falseBlock) {
+        lOrExp.buildLOrExpIR(trueBlock, falseBlock);
     }
 }

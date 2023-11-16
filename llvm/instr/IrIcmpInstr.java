@@ -29,6 +29,6 @@ public class IrIcmpInstr extends IrInstr {
 
     @Override
     public String toString() {
-        return String.format("%s = icmp %s %s %s, %s", getName(), getCond().toString().toLowerCase(), getType(), getOperand1().getName(), getOperand2().getName());
+        return String.format("%s = icmp %s %s %s, %s", getName(), getCond().toString().toLowerCase(), getOperand1().getType(), getOperand1().getName(), getOperand2().getName());
     }
 }

@@ -1,6 +1,7 @@
 package parser.node;
 
 import error.Error;
+import llvm.IrValue;
 import symbol.SymbolManager;
 import symbol.SymbolTable;
 
@@ -31,5 +32,13 @@ public class StmtBlock extends StmtEle {
         SymbolManager.Manager.enterBlock();
         super.checkError(errorList);
         SymbolManager.Manager.leaveBlock();
+    }
+
+    @Override
+    public IrValue buildIR() {
+        SymbolManager.Manager.enterBlock();
+        super.buildIR();
+        SymbolManager.Manager.leaveBlock();
+        return null;
     }
 }

@@ -29,11 +29,11 @@ public class IrGepInstr extends IrInstr {
         IrValueType refType = ((IrPointerType) getPointer().getType()).getRefType();
         sb.append(getName()).append(" = getelementptr inbounds ");
         sb.append(refType).append(", ");
-        sb.append(getPointer().toString()).append(", "); //type name
+        sb.append(getPointer().getType()).append(" ").append(getPointer().getName()).append(", "); //type name,必须这样写，因为可能指针是一条指令，但是toString方法被重写了
         if (refType instanceof IrArrayType) { //如果传入的是[ x i32]*,就需要多加一个i32 0
             sb.append("i32 0, ");
         }
-        sb.append(getOffset().toString()); //type name
+        sb.append(getOffset().getType()).append(" ").append(getOffset().getName()); //type name
         return sb.toString();
     }
 

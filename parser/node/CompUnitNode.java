@@ -42,9 +42,9 @@ public class CompUnitNode extends Node {
 
 
     @Override
-    public IrValue genIR() {
+    public IrValue buildIR() {
         SymbolManager.Manager.resetSymbolTable();
-        super.genIR();
+        super.buildIR();
         return null;
     }
 }

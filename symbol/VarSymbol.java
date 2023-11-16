@@ -1,5 +1,6 @@
 package symbol;
 
+import llvm.IrConstInt;
 import llvm.IrValue;
 
 import java.util.ArrayList;
@@ -11,9 +12,7 @@ public class VarSymbol extends Symbol {
 
     private final int[] size = new int[2];
 
-    private int initVal;//存储变量常量的初值
-
-    private ArrayList<Integer> arrayInitVal = new ArrayList<>();//存储数组初值，将二维数组变为一维数组
+    private ArrayList<Integer> arrayInitVal = new ArrayList<>();//存储变量初值,存储数组初值，将二维数组变为一维数组
 
     private IrValue llvmValue;
 
@@ -48,9 +47,22 @@ public class VarSymbol extends Symbol {
         return size;
     }
 
+    //获取数组长度
+    public int getLength() {
+        if (dim == 1) {
+            return size[1]; //对于一维数组长度存在size[1]
+        } else {
+            return size[0] * size[1];
+        }
+    }
+
     //获取常量初值
     public int getInitVal() {
-        return initVal;
+        if (arrayInitVal.size() == 0) {
+            return -999999999;//没有初始化
+        } else {
+            return arrayInitVal.get(0);
+        }
     }
 
     //获取一维数组初值
@@ -63,8 +75,17 @@ public class VarSymbol extends Symbol {
         return arrayInitVal.get(index1 * size[1] + index2);
     }
 
+    //生成ArrayList<IrConstInt> initValues
+    public ArrayList<IrConstInt> getInitValues() {
+        ArrayList<IrConstInt> initValues = new ArrayList<>();
+        for (int value : arrayInitVal) {
+            initValues.add(new IrConstInt(value));
+        }
+        return initValues;
+    }
+
     public void setInitVal(int initVal) {
-        this.initVal = initVal;
+        this.arrayInitVal.add(initVal);
     }
 
     public ArrayList<Integer> getArrayInitVal() {

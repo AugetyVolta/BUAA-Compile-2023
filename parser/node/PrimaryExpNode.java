@@ -1,6 +1,7 @@
 package parser.node;
 
 import lexer.token.SyntaxType;
+import llvm.IrValue;
 import symbol.SymbolTable;
 
 public class PrimaryExpNode extends Node {
@@ -71,6 +72,17 @@ public class PrimaryExpNode extends Node {
             return lVal.execute();
         } else {
             return number.execute();
+        }
+    }
+
+    @Override
+    public IrValue buildIR() {
+        if (exp != null) {
+            return exp.buildIR();
+        } else if (lVal != null) {
+            return lVal.getLValValue();
+        } else {
+            return number.buildIR();
         }
     }
 }

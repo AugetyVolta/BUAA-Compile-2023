@@ -1,5 +1,10 @@
 package parser.node;
 
+import llvm.IrBuilder;
+import llvm.IrValue;
+import llvm.instr.IrInstrType;
+import llvm.type.IrIntegetType;
+import llvm.type.IrValueType;
 import symbol.SymbolTable;
 
 public class MulExpNode extends Node {
@@ -59,4 +64,25 @@ public class MulExpNode extends Node {
         }
         return 0;
     }
+
+    @Override
+    public IrValue buildIR() {
+        if (mulExp != null) {
+            IrValue operand1 = mulExp.buildIR();
+            IrValue operand2 = unaryExp.buildIR();
+            if (operator.getName().equals("*")) {
+                return IrBuilder.IRBUILDER.buildBinaryInstr(IrIntegetType.INT32, IrInstrType.MUL, operand1, operand2);
+            } else if (operator.getName().equals("/")) {
+                return IrBuilder.IRBUILDER.buildBinaryInstr(IrIntegetType.INT32, IrInstrType.SDIV, operand1, operand2);
+            } else if (operator.getName().equals("%")) {
+                return IrBuilder.IRBUILDER.buildBinaryInstr(IrIntegetType.INT32, IrInstrType.SREM, operand1, operand2);
+            } else {
+                System.out.println("error in MulExp");
+                return null;
+            }
+        } else {
+            return unaryExp.buildIR();
+        }
+    }
+
 }

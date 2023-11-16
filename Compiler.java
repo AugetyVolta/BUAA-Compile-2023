@@ -1,5 +1,7 @@
 import lexer.Lexer;
 import lexer.token.Token;
+import llvm.IrBuilder;
+import llvm.IrModule;
 import parser.Parser;
 import parser.node.CompUnitNode;
 import error.Error;
@@ -38,11 +40,15 @@ public class Compiler {
             for (Error error : errorList) {
                 sb.append(error.toString());
             }
-            writeFile(errorOutputPath, sb.toString());
+            if (!sb.toString().equals("")) {
+                writeFile(errorOutputPath, sb.toString());
+                return;
+            }
         }
-        //llvm
-        if(llvmOutput){
-
+        if (llvmOutput) {
+            compUnitNode.buildIR();
+            IrModule module = IrBuilder.IRBUILDER.getModule();
+            writeFile(llvmOutputPath, module.toString());
         }
     }
 }

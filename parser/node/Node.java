@@ -33,9 +33,9 @@ public abstract class Node {
     }
 
 
-    public IrValue genIR() {
+    public IrValue buildIR() {
         for (Node node : children) {
-            node.genIR();
+            node.buildIR();
         }
         return null;
     }

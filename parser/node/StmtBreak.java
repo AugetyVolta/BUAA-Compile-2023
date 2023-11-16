@@ -3,6 +3,9 @@ package parser.node;
 import error.Error;
 import error.ErrorType;
 import lexer.token.SyntaxType;
+import llvm.IrBasicBlock;
+import llvm.IrBuilder;
+import llvm.IrValue;
 import symbol.SymbolManager;
 import symbol.SymbolTable;
 
@@ -44,5 +47,13 @@ public class StmtBreak extends StmtEle {
             Error error = new Error(breakTk.getLine(), ErrorType.ERROR_USED_BREAK_OR_CONTINUE);
             errorList.add(error);
         }
+    }
+
+    @Override
+    public IrValue buildIR() {
+        IrBasicBlock loopAfterBlock = IrBuilder.IRBUILDER.getLoopAfterBlock();
+        //退出循环并跳转
+        IrBuilder.IRBUILDER.buildBrInstr(loopAfterBlock);
+        return null;
     }
 }

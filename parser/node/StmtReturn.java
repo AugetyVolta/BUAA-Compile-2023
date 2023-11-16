@@ -3,6 +3,9 @@ package parser.node;
 import error.Error;
 import error.ErrorType;
 import lexer.token.SyntaxType;
+import llvm.IrBuilder;
+import llvm.IrValue;
+import llvm.type.IrIntegetType;
 import symbol.SymbolManager;
 import symbol.SymbolTable;
 
@@ -60,5 +63,15 @@ public class StmtReturn extends StmtEle {
             Error error = new Error(returnTk.getLine(), ErrorType.ERROR_USED_RETURN);
             errorList.add(error);
         }
+    }
+
+    @Override
+    public IrValue buildIR() {
+        if (exp == null) {
+            IrBuilder.IRBUILDER.buildRetInstr(null);
+        } else {
+            IrBuilder.IRBUILDER.buildRetInstr(exp.buildIR());
+        }
+        return null;
     }
 }

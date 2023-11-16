@@ -51,7 +51,7 @@ public class IrGlobalVariable extends IrValue {
         sb.append(refType).append(" ");
         if (initValues.size() != 0) {
             if (dim == 0) {
-                sb.append(initValues.get(0).toString());
+                sb.append(initValues.get(0).getName());
             } else {
                 sb.append("[");
                 for (int i = 0; i < initValues.size(); i++) {

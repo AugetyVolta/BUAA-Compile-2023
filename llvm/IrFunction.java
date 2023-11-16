@@ -1,6 +1,7 @@
 package llvm;
 
 import llvm.instr.IrInstr;
+import llvm.instr.IrInstrType;
 import llvm.type.IrIntegetType;
 import llvm.type.IrValueType;
 
@@ -9,7 +10,7 @@ import java.util.ArrayList;
 public class IrFunction extends IrUser {
     private IrIntegetType returnType; //函数返回值
     private ArrayList<IrValue> params;//对于函数来说，是形参param
-    private ArrayList<IrBasicBlock> basicBlocks;//函数中的基本快
+    private ArrayList<IrBasicBlock> basicBlocks;//函数中的基本块
 
     public IrFunction(String name, IrIntegetType returnType) {
         super(name, IrValueType.FUNCTION);
@@ -40,6 +41,23 @@ public class IrFunction extends IrUser {
 
     public ArrayList<IrBasicBlock> getBasicBlocks() {
         return basicBlocks;
+    }
+
+    public void checkReturn() {//检查最后有没有return指令
+        if (returnType == IrIntegetType.INT32) {
+            return;
+        }
+        int size = basicBlocks.size();
+        IrBasicBlock lastBasicBlock = basicBlocks.get(size - 1);
+        if (lastBasicBlock.getInstrs().size() == 0) {
+            IrBuilder.IRBUILDER.buildRetInstr(null);
+        } else {
+            size = lastBasicBlock.getInstrs().size();
+            IrInstr lastInstr = lastBasicBlock.getInstrs().get(size - 1);
+            if(lastInstr.getIrInstrType()!= IrInstrType.RET){
+                IrBuilder.IRBUILDER.buildRetInstr(null);
+            }
+        }
     }
 
     @Override

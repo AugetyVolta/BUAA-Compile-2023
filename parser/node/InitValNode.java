@@ -1,6 +1,7 @@
 package parser.node;
 
 import lexer.token.SyntaxType;
+import llvm.IrValue;
 
 import java.util.ArrayList;
 
@@ -78,5 +79,18 @@ public class InitValNode extends Node {
             }
         }
         return arrayEle;
+    }
+
+    //用于局部变量初始化
+    public ArrayList<IrValue> getInits() {
+        ArrayList<IrValue> inits = new ArrayList<>();
+        if (lbrace == null) {//只有一个exp
+            inits.add(exp.buildIR());
+        } else {//有很多exp
+            for (InitValNode initValNode : initVals) {
+                inits.addAll(initValNode.getInits());
+            }
+        }
+        return inits;
     }
 }

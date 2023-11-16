@@ -1,6 +1,8 @@
 package parser.node;
 
 import lexer.token.Token;
+import llvm.IrConstInt;
+import llvm.IrValue;
 
 public class NumberNode extends Node {
     private String name = "<Number>";
@@ -22,6 +24,11 @@ public class NumberNode extends Node {
 
     public int execute() {
         return Integer.parseInt(intConst.getValue());
+    }
+
+    @Override
+    public IrValue buildIR() {
+        return new IrConstInt(Integer.parseInt(intConst.getValue()));
     }
 
 

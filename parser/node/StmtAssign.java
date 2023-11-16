@@ -3,6 +3,8 @@ package parser.node;
 import error.Error;
 import error.ErrorType;
 import lexer.token.SyntaxType;
+import llvm.IrBuilder;
+import llvm.IrValue;
 import symbol.Symbol;
 import symbol.SymbolManager;
 import symbol.SymbolTable;
@@ -59,6 +61,13 @@ public class StmtAssign extends StmtEle {
                 errorList.add(error);
             }
         }
+    }
+
+    @Override
+    public IrValue buildIR() {
+        IrValue lValPointer = lVal.getLValPointer();//需要获得lval的指针
+        IrBuilder.IRBUILDER.buildStoreInstr(exp.buildIR(), lValPointer);
+        return null;
     }
 }
 

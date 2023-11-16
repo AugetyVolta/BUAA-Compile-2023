@@ -1,5 +1,6 @@
 package parser.node;
 
+import llvm.IrValue;
 import symbol.SymbolTable;
 
 public class ExpNode extends Node {
@@ -33,5 +34,9 @@ public class ExpNode extends Node {
 
     public int execute() {
         return addExp.execute();
+    }
+
+    public IrValue buildIR() {
+        return addExp.buildIR();
     }
 }

@@ -3,6 +3,12 @@ package parser.node;
 import error.Error;
 import error.ErrorType;
 import lexer.token.SyntaxType;
+import llvm.IrBuilder;
+import llvm.IrConstInt;
+import llvm.IrFunction;
+import llvm.IrValue;
+import llvm.instr.IrInstrType;
+import llvm.type.IrIntegetType;
 import symbol.*;
 
 import java.util.ArrayList;
@@ -73,7 +79,6 @@ public class UnaryExpNode extends Node {
     @Override
     public void checkError(ArrayList<Error> errorList) {
         SymbolTable symbolTable = SymbolManager.Manager.getCurSymbolTable();
-
         super.checkError(errorList);
         if (ident == null) { //如果ident为空，就不需要检查参数不匹配问题
             return;
@@ -87,7 +92,7 @@ public class UnaryExpNode extends Node {
         //check d error 函数形参只能为int类型
         if (funcSymbol != null) {
             int paramNum = funcSymbol.getParamNum(); //定义参数个数
-            ArrayList<Integer> dims = funcSymbol.getDims(); //定义时每个参数维度
+            ArrayList<Integer> dims = funcSymbol.getDims(); //函数定义时每个参数维度
             if (funcRParams == null) {
                 if (paramNum > 0) {
                     Error error = new Error(ident.getLine(), ErrorType.MIS_MATCH_PARAM_NUM);
@@ -151,5 +156,39 @@ public class UnaryExpNode extends Node {
 //
 //      }
         return 0;
+    }
+
+    @Override
+    public IrValue buildIR() {
+        if (primaryExp != null) {
+            return primaryExp.buildIR();
+        } else if (ident != null) { //需要调用函数,变量被定义时的维度和被使用时的维度是不同的
+            SymbolTable symbolTable = SymbolManager.Manager.getCurSymbolTable();
+            FuncSymbol funcSymbol = (FuncSymbol) symbolTable.getSymbol(ident.getName(), SymbolType.FUNC);
+            IrFunction irFunction = (IrFunction) funcSymbol.getLlvmValue();//找到函数对应Value
+            if (funcRParams != null) {//无参数
+                return IrBuilder.IRBUILDER.buildCallInstr(irFunction, funcRParams.getArgumentValues());
+            } else {
+                return IrBuilder.IRBUILDER.buildCallInstr(irFunction, new ArrayList<>());
+            }
+        } else if (unaryOp != null) {
+            if (unaryOp.getName().equals("+")) {
+                return unaryExp.buildIR();
+            } else if (unaryOp.getName().equals("-")) {
+                IrValue operand1 = new IrConstInt(0);
+                IrValue operand2 = unaryExp.buildIR();
+                return IrBuilder.IRBUILDER.buildBinaryInstr(IrIntegetType.INT32, IrInstrType.SUB, operand1, operand2);
+            } else if (unaryOp.getName().equals("!")) {
+                IrValue operand1 = new IrConstInt(0);
+                IrValue operand2 = unaryExp.buildIR();
+                IrValue icmpResult = IrBuilder.IRBUILDER.buildIcmpInstr(IrInstrType.EQ, operand1, operand2);//判断是否和零相等,其实就是取反的过程
+                return IrBuilder.IRBUILDER.buildZextInstr(IrIntegetType.INT32, icmpResult);//转为i32
+            } else {
+                System.out.println("error in UnaryExp about unaryOp");
+                return null;
+            }
+        } else {
+            return null;
+        }
     }
 }

@@ -1,5 +1,9 @@
 package parser.node;
 
+import llvm.IrBuilder;
+import llvm.IrValue;
+import llvm.instr.IrInstrType;
+import llvm.type.IrIntegetType;
 import symbol.SymbolTable;
 
 import java.util.Objects;
@@ -51,14 +55,31 @@ public class AddExpNode extends Node {
         if (addExp != null) {
             if (operator.getName().equals("+")) {
                 return addExp.execute() + mulExp.execute();
-            }
-            else if(operator.getName().equals("-")){
+            } else if (operator.getName().equals("-")) {
                 return addExp.execute() - mulExp.execute();
             }
         } else {
             return mulExp.execute();
         }
         return 0;
+    }
+
+    @Override
+    public IrValue buildIR() {
+        if (addExp != null) { //AddExp ('+' | '−') MulExp
+            IrValue addExpValue = addExp.buildIR();
+            IrValue mulExpValue = mulExp.buildIR();
+            if (operator.getName().equals("+")) {
+                return IrBuilder.IRBUILDER.buildBinaryInstr(IrIntegetType.INT32, IrInstrType.ADD, addExpValue, mulExpValue);
+            } else if (operator.getName().equals("-")) {
+                return IrBuilder.IRBUILDER.buildBinaryInstr(IrIntegetType.INT32, IrInstrType.SUB, addExpValue, mulExpValue);
+            } else {
+                System.out.println("error in AddExp");
+                return null;
+            }
+        } else {//MulExp
+            return mulExp.buildIR();
+        }
     }
 
 

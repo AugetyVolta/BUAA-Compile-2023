@@ -6,6 +6,7 @@ import llvm.type.IrValueType;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Stack;
 
 public class IrBuilder {
     public static IrBuilder IRBUILDER = new IrBuilder(); //全局静态变量
@@ -16,6 +17,8 @@ public class IrBuilder {
     private int paramCnt = 0;//形参的数量
     private int basicBlockCnt = 0;//基本块的数量
     private final HashMap<IrFunction, Integer> varInFunctionCnt;//记录每一个函数块中的参数个数
+    private final Stack<IrBasicBlock> loopStmt2Blocks = new Stack<>();//for循环的forStmt2
+    private final Stack<IrBasicBlock> loopAfterBlocks = new Stack<>();//循环之后的block
 
     public IrBuilder() {
         this.module = new IrModule();
@@ -24,9 +27,19 @@ public class IrBuilder {
         this.varInFunctionCnt = new HashMap<>();
     }
 
+    //获取module
+    public IrModule getModule() {
+        return this.module;
+    }
+
     //设置当前所处基本块
     public void setCurBasicBlock(IrBasicBlock irBasicBlock) {
         this.curBasicBlock = irBasicBlock;
+    }
+
+    //得到当前所处基本块
+    public IrBasicBlock getCurBasicBlock() {
+        return curBasicBlock;
     }
 
     //设置当前所处函数
@@ -41,6 +54,24 @@ public class IrBuilder {
         //修改当前函数的总指令数
         varInFunctionCnt.put(curFunction, varIndex);
         return formatName;
+    }
+
+    public void enterLoop(IrBasicBlock loopStmt2Block, IrBasicBlock loopAfterBlock) {
+        loopStmt2Blocks.push(loopStmt2Block);
+        loopAfterBlocks.push(loopAfterBlock);
+    }
+
+    public void leaveLoop() {
+        loopStmt2Blocks.pop();
+        loopAfterBlocks.pop();
+    }
+
+    public IrBasicBlock getLoopStmt2Block() {
+        return loopStmt2Blocks.peek();
+    }
+
+    public IrBasicBlock getLoopAfterBlock() {
+        return loopAfterBlocks.peek();
     }
 
     //构建全局变量
@@ -63,6 +94,10 @@ public class IrBuilder {
         IrFunction irFunction = new IrFunction(formatName, returnType);
         //将function加入到module中
         module.addIrFunction(irFunction);
+        //将当前函数设为自己
+        setCurFunction(irFunction);
+        //函数一定会构建一个基本块，并且一开始就处在基本块中
+        buildBasicBlock();
         return irFunction;
     }
 
@@ -82,6 +117,8 @@ public class IrBuilder {
         IrBasicBlock irBasicBlock = new IrBasicBlock(formatName, curFunction);
         //将basicBlock加入函数中
         curFunction.addBasicBlock(irBasicBlock);
+        //并且会处于新建的basicBlock中
+        setCurBasicBlock(irBasicBlock);
         return irBasicBlock;
     }
 

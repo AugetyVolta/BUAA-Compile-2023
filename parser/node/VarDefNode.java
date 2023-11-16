@@ -3,6 +3,13 @@ package parser.node;
 import error.Error;
 import error.ErrorType;
 import lexer.token.SyntaxType;
+import llvm.IrBuilder;
+import llvm.IrConstInt;
+import llvm.IrValue;
+import llvm.instr.IrAllocaInstr;
+import llvm.instr.IrGepInstr;
+import llvm.type.IrArrayType;
+import llvm.type.IrIntegetType;
 import symbol.*;
 
 import java.util.ArrayList;
@@ -69,6 +76,7 @@ public class VarDefNode extends Node {
     @Override
     public void checkError(ArrayList<Error> errorList) {
         SymbolTable symbolTable = SymbolManager.Manager.getCurSymbolTable();
+        super.checkError(errorList);
         if (symbolTable.hasSymbol(ident.getName())) {
             Error error = new Error(ident.getLine(), ErrorType.REDEFINED_SYMBOL);
             errorList.add(error);
@@ -113,5 +121,43 @@ public class VarDefNode extends Node {
                 System.out.print(sb.toString());
             }
         }
+    }
+
+    @Override
+    public IrValue buildIR() {
+        SymbolTable symbolTable = SymbolManager.Manager.getCurSymbolTable();
+        symbolTable.addSymbol(varSymbol);
+        if (SymbolManager.Manager.isGlobal()) { //对于全局变量(非常量)的定义,如果有初始值,也是可求值的,没有初始值,就会赋值0
+            ArrayList<IrConstInt> initValues = initVal != null ? varSymbol.getInitValues() : null;//获取初始值
+            if (varSymbol.getDim() == 0) {//如果initVal != null,就一定被初始化
+                IrValue i32_pointer = IrBuilder.IRBUILDER.buildGlobalVariable(IrIntegetType.INT32, false, initValues);
+                varSymbol.setLlvmValue(i32_pointer);
+            } else {//一维数组或者二维数组,//如果initVal != null,就一定被初始化
+                IrArrayType irArrayType = new IrArrayType(varSymbol.getLength(), IrIntegetType.INT32);
+                IrValue array_pointer = IrBuilder.IRBUILDER.buildGlobalVariable(irArrayType, false, initValues);
+                varSymbol.setLlvmValue(array_pointer);
+            }
+        } else {
+            if (varSymbol.getDim() == 0) { //局部变量
+                IrAllocaInstr i32_pointer = IrBuilder.IRBUILDER.buildAllocaInstr(IrIntegetType.INT32);//alloca
+                varSymbol.setLlvmValue(i32_pointer);//被alloca出的指针就是当前的变量
+                if (initVal != null) {
+                    ArrayList<IrValue> inits = initVal.getInits();
+                    IrBuilder.IRBUILDER.buildStoreInstr(inits.get(0), i32_pointer);
+                }
+            } else { //局部一维数组或二维数组
+                IrArrayType irArrayType = new IrArrayType(varSymbol.getLength(), IrIntegetType.INT32);//alloca
+                IrAllocaInstr array_pointer = IrBuilder.IRBUILDER.buildAllocaInstr(irArrayType);
+                varSymbol.setLlvmValue(array_pointer);
+                if (initVal != null) {
+                    ArrayList<IrValue> inits = initVal.getInits();
+                    for (int i = 0; i < inits.size(); i++) {
+                        IrGepInstr elemPointer = IrBuilder.IRBUILDER.buildGepInstr(array_pointer, new IrConstInt(i));//获取每一个数组元素指针
+                        IrBuilder.IRBUILDER.buildStoreInstr(inits.get(i), elemPointer);
+                    }
+                }
+            }
+        }
+        return null;
     }
 }

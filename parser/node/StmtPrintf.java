@@ -1,6 +1,9 @@
 package parser.node;
 
 import lexer.token.SyntaxType;
+import llvm.IrBuilder;
+import llvm.IrConstInt;
+import llvm.IrValue;
 
 import java.util.ArrayList;
 
@@ -56,5 +59,25 @@ public class StmtPrintf extends StmtEle {
         sb.append(rparent.toString());
         sb.append(semicn.toString());
         return sb.toString();
+    }
+
+    @Override
+    public IrValue buildIR() {
+        int expIndex = 0;
+        String s = strcon.getToken().getValue();
+        int length = s.length();
+        for (int i = 1; i < length-1; i++) {
+            char c = s.charAt(i);
+            if (c == '%') {
+                i++;
+                IrBuilder.IRBUILDER.buildPutIntInstr(exps.get(expIndex++).buildIR());
+            } else if (c == '\\') {
+                i++;
+                IrBuilder.IRBUILDER.buildPutCharInstr(new IrConstInt('\n'));
+            } else {
+                IrBuilder.IRBUILDER.buildPutCharInstr(new IrConstInt(c));
+            }
+        }
+        return null;
     }
 }

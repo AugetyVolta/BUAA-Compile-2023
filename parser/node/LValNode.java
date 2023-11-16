@@ -3,6 +3,11 @@ package parser.node;
 import error.Error;
 import error.ErrorType;
 import lexer.token.SyntaxType;
+import llvm.IrBuilder;
+import llvm.IrConstInt;
+import llvm.IrValue;
+import llvm.instr.IrInstrType;
+import llvm.type.IrIntegetType;
 import symbol.*;
 
 import java.util.ArrayList;
@@ -64,6 +69,7 @@ public class LValNode extends Node {
     @Override
     public void checkError(ArrayList<Error> errorList) {
         SymbolTable symbolTable = SymbolManager.Manager.getCurSymbolTable();
+        super.checkError(errorList);
         String name = ident.getName();
         //没找到
         if (symbolTable.getSymbol(name, SymbolType.VAR) == null) {
@@ -105,4 +111,59 @@ public class LValNode extends Node {
         }
         return 0;
     }
+
+    public IrValue getLValPointer() {
+        SymbolTable symbolTable = SymbolManager.Manager.getCurSymbolTable();
+        VarSymbol lValsymbol = (VarSymbol) symbolTable.getSymbol(getName());
+        IrValue lValPointer = lValsymbol.getLlvmValue();
+        int dim = lValsymbol.getDim();//变量被定义时的维度
+        if (dim == 0) {
+            return lValPointer;
+        } else if (dim == 1) {
+            IrValue index0 = exps.get(0).buildIR();//数组下标
+            return IrBuilder.IRBUILDER.buildGepInstr(lValPointer, index0);//下标相应位置指针
+        } else {
+            int[] size = lValsymbol.getSize();
+            IrValue index0 = exps.get(0).buildIR();
+            IrValue index1 = exps.get(1).buildIR();
+            IrValue mulInstr = IrBuilder.IRBUILDER.buildBinaryInstr(IrIntegetType.INT32, IrInstrType.MUL, index0, new IrConstInt(size[1]));
+            IrValue addInstr = IrBuilder.IRBUILDER.buildBinaryInstr(IrIntegetType.INT32, IrInstrType.ADD, mulInstr, index1);
+            return IrBuilder.IRBUILDER.buildGepInstr(lValPointer, addInstr);//下标相应位置指针
+        }
+    }
+
+    public IrValue getLValValue() {
+        SymbolTable symbolTable = SymbolManager.Manager.getCurSymbolTable();
+        VarSymbol lValsymbol = (VarSymbol) symbolTable.getSymbol(getName());
+        IrValue lValPointer = lValsymbol.getLlvmValue();
+        int dim = lValsymbol.getDim();//变量定义时的维度
+        if (dim == 0) {
+            return IrBuilder.IRBUILDER.buildLoadInstr(lValPointer);
+        } else if (dim == 1) {//变量定义时的维度维1
+            if (getDim(symbolTable) == 0) {//被调用时的维度是0,即定义数组a[],调用a[x]
+                IrValue index0 = exps.get(0).buildIR();//数组下标
+                IrValue gepInstr = IrBuilder.IRBUILDER.buildGepInstr(lValPointer, index0);//下标相应位置指针
+                return IrBuilder.IRBUILDER.buildLoadInstr(gepInstr);
+            } else {//被调用时的维度是1,即定义数组a[],调用a
+                return IrBuilder.IRBUILDER.buildGepInstr(lValPointer, new IrConstInt(0));
+            }
+        } else {
+            int[] size = lValsymbol.getSize();
+            if (getDim(symbolTable) == 0) {//被调用时的维度是0,即定义数组a[][],调用a[x][y]
+                IrValue index0 = exps.get(0).buildIR();
+                IrValue index1 = exps.get(1).buildIR();
+                IrValue mulInstr = IrBuilder.IRBUILDER.buildBinaryInstr(IrIntegetType.INT32, IrInstrType.MUL, index0, new IrConstInt(size[1]));
+                IrValue addInstr = IrBuilder.IRBUILDER.buildBinaryInstr(IrIntegetType.INT32, IrInstrType.ADD, mulInstr, index1);
+                IrValue gepInstr = IrBuilder.IRBUILDER.buildGepInstr(lValPointer, addInstr);//下标相应位置指针
+                return IrBuilder.IRBUILDER.buildLoadInstr(gepInstr);
+            } else if (getDim(symbolTable) == 1) {//被调用时的维度是1,即定义数组a[][],调用a[x]
+                IrValue index0 = exps.get(0).buildIR();
+                IrValue mulInstr = IrBuilder.IRBUILDER.buildBinaryInstr(IrIntegetType.INT32, IrInstrType.MUL, index0, new IrConstInt(size[1]));
+                return IrBuilder.IRBUILDER.buildGepInstr(lValPointer, mulInstr);//下标相应位置指针
+            } else {//被调用时的维度是2,即定义数组a[][],调用a
+                return IrBuilder.IRBUILDER.buildGepInstr(lValPointer, new IrConstInt(0));
+            }
+        }
+    }
+
 }

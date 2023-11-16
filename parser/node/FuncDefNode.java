@@ -3,6 +3,12 @@ package parser.node;
 import error.ErrorType;
 import error.Error;
 import lexer.token.SyntaxType;
+import llvm.IrBuilder;
+import llvm.IrFunction;
+import llvm.IrValue;
+import llvm.type.IrIntegetType;
+import llvm.type.IrPointerType;
+import llvm.type.IrValueType;
 import symbol.*;
 
 import java.util.ArrayList;
@@ -105,5 +111,28 @@ public class FuncDefNode extends Node {
 
         //退出符号表
         SymbolManager.Manager.leaveBlock();
+    }
+
+    @Override
+    public IrValue buildIR() {
+        SymbolTable symbolTable = SymbolManager.Manager.getCurSymbolTable();
+        symbolTable.addSymbol(funcSymbol);
+        //构建函数
+        IrIntegetType retValueType = funcSymbol.getDataType() == DataType.VOID ? IrIntegetType.VOID : IrIntegetType.INT32;
+        IrFunction irFunction = IrBuilder.IRBUILDER.buildFunction(funcSymbol.getName(), retValueType);//build函数会自动构建基本块，将当前函数设置为自己，将当前基本块设置为新建的基本块
+        funcSymbol.setLlvmValue(irFunction);
+        //定义新符号表，进入新的block
+        SymbolManager.Manager.enterBlock();
+        //设置新符号表是否需要返回
+        SymbolTable newSymbolTable = SymbolManager.Manager.getCurSymbolTable();
+        newSymbolTable.setNeedReturn(funcType.getFuncType() == SyntaxType.INTTK);
+        //参数在FuncFParam中处理
+        //去build函数中的block
+        super.buildIR();
+        //如果没有ret,需要添加一条return指令,只需要检查对于void类型的函数最后一条指令是否是ret void即可,没有就补上
+        irFunction.checkReturn();
+        //退出符号表
+        SymbolManager.Manager.leaveBlock();
+        return null;
     }
 }

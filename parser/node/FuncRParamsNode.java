@@ -1,6 +1,7 @@
 package parser.node;
 
 import lexer.token.SyntaxType;
+import llvm.IrValue;
 
 import java.util.ArrayList;
 
@@ -43,5 +44,13 @@ public class FuncRParamsNode extends Node {
         }
         sb.append(name).append("\n");
         return sb.toString();
+    }
+
+    public ArrayList<IrValue> getArgumentValues() {
+        ArrayList<IrValue> arguments = new ArrayList<>();
+        for (ExpNode exp : exps) {
+            arguments.add(exp.buildIR());
+        }
+        return arguments;
     }
 }
