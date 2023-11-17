@@ -47,14 +47,18 @@ public class IrFunction extends IrUser {
         if (returnType == IrIntegetType.INT32) {
             return;
         }
-        int size = basicBlocks.size();
-        IrBasicBlock lastBasicBlock = basicBlocks.get(size - 1);
+        /**
+         * 如果函数只有一个基本块,最后一个块就是当前的块
+         * 如果有多个基本块,if和for都会把最后一个块设为当前基本块
+         * 因此,最后一个块就是当前的基本块
+         */
+        IrBasicBlock lastBasicBlock = IrBuilder.IRBUILDER.getCurBasicBlock();
         if (lastBasicBlock.getInstrs().size() == 0) {
             IrBuilder.IRBUILDER.buildRetInstr(null);
         } else {
-            size = lastBasicBlock.getInstrs().size();
+            int size = lastBasicBlock.getInstrs().size();
             IrInstr lastInstr = lastBasicBlock.getInstrs().get(size - 1);
-            if(lastInstr.getIrInstrType()!= IrInstrType.RET){
+            if (lastInstr.getIrInstrType() != IrInstrType.RET) {
                 IrBuilder.IRBUILDER.buildRetInstr(null);
             }
         }

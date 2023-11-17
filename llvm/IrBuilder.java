@@ -144,8 +144,17 @@ public class IrBuilder {
     public IrBrInstr buildBrInstr(IrBasicBlock basicBlock) {
         String formatName = generateVarName();
         IrBrInstr irBrInstr = new IrBrInstr(formatName, basicBlock);
-        //将指令加入到当前基本块中
-        curBasicBlock.addInstr(irBrInstr);
+        //如果前面没有return或者Br指令,将指令加入到当前基本块中
+        int size = curBasicBlock.getInstrs().size();
+        if (size == 0) {
+            curBasicBlock.addInstr(irBrInstr);
+        } else {
+            IrInstr preInstr = curBasicBlock.getInstrs().get(size - 1);
+            if (preInstr.getIrInstrType() != IrInstrType.RET &&
+                    preInstr.getIrInstrType() != IrInstrType.BR) {
+                curBasicBlock.addInstr(irBrInstr);
+            }
+        }
         return irBrInstr;
     }
 
@@ -153,8 +162,17 @@ public class IrBuilder {
     public IrBrInstr buildBrInstr(IrValue cond, IrBasicBlock basicBlock1, IrBasicBlock basicBlock2) {
         String formatName = generateVarName();
         IrBrInstr irBrInstr = new IrBrInstr(formatName, cond, basicBlock1, basicBlock2);
-        //将指令加入到当前基本块中
-        curBasicBlock.addInstr(irBrInstr);
+        //如果前面没有return或者Br指令,将指令加入到当前基本块中
+        int size = curBasicBlock.getInstrs().size();
+        if (size == 0) {
+            curBasicBlock.addInstr(irBrInstr);
+        } else {
+            IrInstr preInstr = curBasicBlock.getInstrs().get(size - 1);
+            if (preInstr.getIrInstrType() != IrInstrType.RET &&
+                    preInstr.getIrInstrType() != IrInstrType.BR) {
+                curBasicBlock.addInstr(irBrInstr);
+            }
+        }
         return irBrInstr;
     }
 
