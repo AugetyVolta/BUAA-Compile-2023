@@ -2,6 +2,7 @@ package llvm;
 
 import llvm.instr.IrInstr;
 import llvm.type.IrValueType;
+import mips.MipsBuilder;
 
 import java.util.ArrayList;
 
@@ -39,5 +40,14 @@ public class IrBasicBlock extends IrValue {
             sb.append(instr).append("\n\t");
         }
         return sb.toString();
+    }
+
+    @Override
+    public void buildMips() {
+        //构建基本块的label
+        MipsBuilder.MIPSBUILDER.buildMipsLabel(getName());
+        for (IrInstr instr : instrs) {
+            instr.buildMips();
+        }
     }
 }

@@ -130,11 +130,11 @@ public class VarDefNode extends Node {
         if (SymbolManager.Manager.isGlobal()) { //对于全局变量(非常量)的定义,如果有初始值,也是可求值的,没有初始值,就会赋值0
             ArrayList<IrConstInt> initValues = initVal != null ? varSymbol.getInitValues() : null;//获取初始值
             if (varSymbol.getDim() == 0) {//如果initVal != null,就一定被初始化
-                IrValue i32_pointer = IrBuilder.IRBUILDER.buildGlobalVariable(IrIntegetType.INT32, false, initValues);
+                IrValue i32_pointer = IrBuilder.IRBUILDER.buildGlobalVariable(IrIntegetType.INT32, 1, false, initValues);
                 varSymbol.setLlvmValue(i32_pointer);
             } else {//一维数组或者二维数组,//如果initVal != null,就一定被初始化
                 IrArrayType irArrayType = new IrArrayType(varSymbol.getLength(), IrIntegetType.INT32);
-                IrValue array_pointer = IrBuilder.IRBUILDER.buildGlobalVariable(irArrayType, false, initValues);
+                IrValue array_pointer = IrBuilder.IRBUILDER.buildGlobalVariable(irArrayType, varSymbol.getLength(), false, initValues);
                 varSymbol.setLlvmValue(array_pointer);
             }
         } else {

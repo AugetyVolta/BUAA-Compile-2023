@@ -123,11 +123,11 @@ public class ConstDefNode extends Node {
         if (SymbolManager.Manager.isGlobal()) { //如果是全局变量
             ArrayList<IrConstInt> initValues = varSymbol.getInitValues();//获取初始值
             if (varSymbol.getDim() == 0) {//常数,一定被初始化,只有第一个值被初始化
-                IrValue i32_pointer = IrBuilder.IRBUILDER.buildGlobalVariable(IrIntegetType.INT32, true, initValues);
+                IrValue i32_pointer = IrBuilder.IRBUILDER.buildGlobalVariable(IrIntegetType.INT32, 1, true, initValues);
                 varSymbol.setLlvmValue(i32_pointer);
             } else {//一维数组或者二维数组,一定被初始化
                 IrArrayType irArrayType = new IrArrayType(varSymbol.getLength(), IrIntegetType.INT32);
-                IrValue array_pointer = IrBuilder.IRBUILDER.buildGlobalVariable(irArrayType, true, initValues);
+                IrValue array_pointer = IrBuilder.IRBUILDER.buildGlobalVariable(irArrayType, varSymbol.getLength(), true, initValues);
                 varSymbol.setLlvmValue(array_pointer);
             }
         } else { //如果不是全局变量,使用alloca函数

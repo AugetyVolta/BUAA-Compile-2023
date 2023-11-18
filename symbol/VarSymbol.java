@@ -59,7 +59,7 @@ public class VarSymbol extends Symbol {
     //获取常量初值
     public int getInitVal() {
         if (arrayInitVal.size() == 0) {
-            return -999999999;//没有初始化
+            return 0;//没有初始化
         } else {
             return arrayInitVal.get(0);
         }

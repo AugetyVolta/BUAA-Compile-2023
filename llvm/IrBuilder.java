@@ -75,10 +75,10 @@ public class IrBuilder {
     }
 
     //构建全局变量
-    public IrGlobalVariable buildGlobalVariable(IrValueType irValueType, boolean isConst, ArrayList<IrConstInt> initValues) {
+    public IrGlobalVariable buildGlobalVariable(IrValueType irValueType, int length, boolean isConst, ArrayList<IrConstInt> initValues) {
         //@g%d标注全局变量的名字
         String formatName = String.format("@g%d", globalVarCnt++);
-        IrGlobalVariable irGlobalVariable = new IrGlobalVariable(formatName, irValueType, isConst);
+        IrGlobalVariable irGlobalVariable = new IrGlobalVariable(formatName, irValueType, length, isConst);
         if (initValues != null) {
             irGlobalVariable.setInitValues(initValues);
         }

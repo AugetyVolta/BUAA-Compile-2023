@@ -1,6 +1,7 @@
 package llvm;
 
 import llvm.type.IrValueType;
+import mips.MipsBuilder;
 
 import java.util.ArrayList;
 
@@ -46,4 +47,13 @@ public class IrModule extends IrValue {
         return sb.toString();
     }
 
+    @Override
+    public void buildMips() {
+        for (IrGlobalVariable globalVariable : irGlobalVariables) {
+            globalVariable.buildMips();
+        }
+        for (IrFunction irFunction : irFunctions) {
+            irFunction.buildMips();
+        }
+    }
 }

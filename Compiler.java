@@ -2,6 +2,8 @@ import lexer.Lexer;
 import lexer.token.Token;
 import llvm.IrBuilder;
 import llvm.IrModule;
+import mips.MipsBuilder;
+import mips.MipsModule;
 import parser.Parser;
 import parser.node.CompUnitNode;
 import error.Error;
@@ -45,10 +47,15 @@ public class Compiler {
                 return;
             }
         }
+        compUnitNode.buildIR();
+        IrModule module = IrBuilder.IRBUILDER.getModule();
         if (llvmOutput) {
-            compUnitNode.buildIR();
-            IrModule module = IrBuilder.IRBUILDER.getModule();
             writeFile(llvmOutputPath, module.toString());
+        }
+        module.buildMips();
+        MipsModule mipsModule = MipsBuilder.MIPSBUILDER.getMipsModule();
+        if (mipsOutput) {
+            writeFile(mipsOutputPath, mipsModule.toString());
         }
     }
 }

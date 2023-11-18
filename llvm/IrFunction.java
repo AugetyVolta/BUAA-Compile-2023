@@ -4,6 +4,7 @@ import llvm.instr.IrInstr;
 import llvm.instr.IrInstrType;
 import llvm.type.IrIntegetType;
 import llvm.type.IrValueType;
+import mips.MipsBuilder;
 
 import java.util.ArrayList;
 
@@ -81,5 +82,15 @@ public class IrFunction extends IrUser {
         }
         sb.append("}").append("\n");
         return sb.toString();
+    }
+
+    @Override
+    public void buildMips() {
+        //构建函数名
+        MipsBuilder.MIPSBUILDER.buildMipsLabel(getName().substring(1));
+        //TODO:参数相关处理
+        for (IrBasicBlock basicBlock : basicBlocks) {
+            basicBlock.buildMips();
+        }
     }
 }

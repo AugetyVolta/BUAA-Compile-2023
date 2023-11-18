@@ -49,4 +49,6 @@ public class IrValue {
         return type + " " + name;
     }
 
+    public void buildMips() {}
+
 }
