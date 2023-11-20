@@ -44,15 +44,18 @@ public class LOrExpNode extends Node {
 
     public void buildLOrExpIR(IrBasicBlock trueBlock, IrBasicBlock falseBlock) {
         if (lOrExp != null) {  //LOrExp '||' LAndExp
-            IrBasicBlock enterForLOrExp = IrBuilder.IRBUILDER.getCurBasicBlock();//进入函数时LOrExp处的block,其实就是LOrExp应该放的位置
-            IrBasicBlock enterForLAndExp = IrBuilder.IRBUILDER.buildBasicBlock();
-            lAndExp.buildLAndExpIR(trueBlock, falseBlock);
+            // 进入函数时LOrExp处的block,其实就是LOrExp应该放的位置
+            IrBasicBlock enterForLOrExp = IrBuilder.IRBUILDER.getCurBasicBlock();
+            IrBasicBlock enterForLAndExp = IrBuilder.IRBUILDER.buildBasicBlock(false);
             //将当前的指令块设置为进来时的block,开始构建LOrExp
             IrBuilder.IRBUILDER.setCurBasicBlock(enterForLOrExp);
             lOrExp.buildLOrExpIR(trueBlock, enterForLAndExp);//如果为true跳转到trueBlock,否则到LAndExp
+            //构建LAndExp
+            IrBuilder.IRBUILDER.setCurBasicBlock(enterForLAndExp);
+            IrBuilder.IRBUILDER.addBasicBlock(enterForLAndExp);
+            lAndExp.buildLAndExpIR(trueBlock, falseBlock);
         } else { //LAndExp
             lAndExp.buildLAndExpIR(trueBlock, falseBlock);
         }
     }
-
 }

@@ -52,26 +52,20 @@ public class LAndExpNode extends Node {
         if (lAndExp != null) { //LAndExp '&&' EqExp
             IrBasicBlock enterForLAndExp = IrBuilder.IRBUILDER.getCurBasicBlock();
             //为EqExp创建新的block
-            IrBasicBlock enterForEqExp = IrBuilder.IRBUILDER.buildBasicBlock();
-            //接下来build EqExp
-            IrValue eqExpValue = eqExp.buildIR();
-            if (eqExpValue.getType() == IrIntegetType.INT32) {
-                IrValue icmpInstr = IrBuilder.IRBUILDER.buildIcmpInstr(IrInstrType.NE, eqExpValue, new IrConstInt(0));
-                IrBuilder.IRBUILDER.buildBrInstr(icmpInstr, trueBlock, falseBlock);
-            } else {
-                IrBuilder.IRBUILDER.buildBrInstr(eqExpValue, trueBlock, falseBlock);
-            }
+            IrBasicBlock enterForEqExp = IrBuilder.IRBUILDER.buildBasicBlock(false);
             //将当前的指令块设置为进来时的block,开始构建LAndExp
             IrBuilder.IRBUILDER.setCurBasicBlock(enterForLAndExp);
             lAndExp.buildLAndExpIR(enterForEqExp, falseBlock);//如果为true就跳转到EqExp
-        } else { //EqExp
-            IrValue eqExpValue = eqExp.buildIR();
-            if (eqExpValue.getType() == IrIntegetType.INT32) {
-                IrValue icmpInstr = IrBuilder.IRBUILDER.buildIcmpInstr(IrInstrType.NE, eqExpValue, new IrConstInt(0));
-                IrBuilder.IRBUILDER.buildBrInstr(icmpInstr, trueBlock, falseBlock);
-            } else {
-                IrBuilder.IRBUILDER.buildBrInstr(eqExpValue, trueBlock, falseBlock);
-            }
+            //接下来build EqExp
+            IrBuilder.IRBUILDER.setCurBasicBlock(enterForEqExp);
+            IrBuilder.IRBUILDER.addBasicBlock(enterForEqExp);
+        } //EqExp
+        IrValue eqExpValue = eqExp.buildIR();
+        if (eqExpValue.getType() == IrIntegetType.INT32) {
+            IrValue icmpInstr = IrBuilder.IRBUILDER.buildIcmpInstr(IrInstrType.NE, eqExpValue, new IrConstInt(0));
+            IrBuilder.IRBUILDER.buildBrInstr(icmpInstr, trueBlock, falseBlock);
+        } else {
+            IrBuilder.IRBUILDER.buildBrInstr(eqExpValue, trueBlock, falseBlock);
         }
     }
 }

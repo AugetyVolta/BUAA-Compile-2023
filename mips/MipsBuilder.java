@@ -60,16 +60,16 @@ public class MipsBuilder {
     }
 
     //构建RInstr
-    //构建add
-    public void buildAdd(int rd, int rs, int rt) {
-        MipsAdd add = new MipsAdd(rd, rs, rt);
-        mipsModule.addTextData(add);
+    //构建addu
+    public void buildAddu(int rd, int rs, int rt) {
+        MipsAddu addu = new MipsAddu(rd, rs, rt);
+        mipsModule.addTextData(addu);
     }
 
-    //构建sub
-    public void buildSub(int rd, int rs, int rt) {
-        MipsSub sub = new MipsSub(rd, rs, rt);
-        mipsModule.addTextData(sub);
+    //构建subu
+    public void buildSubu(int rd, int rs, int rt) {
+        MipsSubu subu = new MipsSubu(rd, rs, rt);
+        mipsModule.addTextData(subu);
     }
 
     //构建seq

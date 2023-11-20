@@ -67,7 +67,7 @@ public class IrGepInstr extends IrInstr {
         }
         //偏移量+基地址
         MipsBuilder.MIPSBUILDER.buildSll(9, 9, 2);//要乘4
-        MipsBuilder.MIPSBUILDER.buildAdd(8, 8, 9);
+        MipsBuilder.MIPSBUILDER.buildAddu(8, 8, 9);
         //构建变量并存储数组初地址
         MipsBuilder.MIPSBUILDER.buildSw(8, 29, MipsBuilder.MIPSBUILDER.buildVarSymbol(this));
     }

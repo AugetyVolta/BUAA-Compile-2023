@@ -122,6 +122,19 @@ public class IrBuilder {
         return irBasicBlock;
     }
 
+    public IrBasicBlock buildBasicBlock(boolean addOrNot) {
+        //b%d标注基本块的名字
+        String formatName = String.format("b%d", basicBlockCnt++);
+        IrBasicBlock irBasicBlock = new IrBasicBlock(formatName, curFunction);
+        if (addOrNot) {
+            //将basicBlock加入函数中
+            curFunction.addBasicBlock(irBasicBlock);
+        }
+        //并且会处于新建的basicBlock中
+        setCurBasicBlock(irBasicBlock);
+        return irBasicBlock;
+    }
+
     //构建alloca指令
     public IrAllocaInstr buildAllocaInstr(IrValueType irValueType) {
         String formatName = generateVarName();
@@ -264,6 +277,10 @@ public class IrBuilder {
         //将指令加入到当前基本块中
         curBasicBlock.addInstr(irGetPutInstr);
         return irGetPutInstr;
+    }
+
+    public void addBasicBlock(IrBasicBlock basicBlock) {
+        curFunction.addBasicBlock(basicBlock);
     }
 
 }

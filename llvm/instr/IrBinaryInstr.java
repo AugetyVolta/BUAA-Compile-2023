@@ -47,10 +47,10 @@ public class IrBinaryInstr extends IrInstr {
         //开始构建指令
         switch (getIrInstrType()) {
             case ADD:
-                MipsBuilder.MIPSBUILDER.buildAdd(10, 8, 9);
+                MipsBuilder.MIPSBUILDER.buildAddu(10, 8, 9);
                 break;
             case SUB:
-                MipsBuilder.MIPSBUILDER.buildSub(10, 8, 9);
+                MipsBuilder.MIPSBUILDER.buildSubu(10, 8, 9);
                 break;
             case MUL:
                 MipsBuilder.MIPSBUILDER.buildMult(8, 9);

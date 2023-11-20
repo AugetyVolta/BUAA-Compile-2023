@@ -95,10 +95,10 @@ public class StmtFor extends StmtEle {
     @Override
     public IrValue buildIR() {
         IrBasicBlock enterBlock = IrBuilder.IRBUILDER.getCurBasicBlock();
-        IrBasicBlock condBlock = IrBuilder.IRBUILDER.buildBasicBlock();
-        IrBasicBlock forStmt2Block = IrBuilder.IRBUILDER.buildBasicBlock();
-        IrBasicBlock stmtBlock = IrBuilder.IRBUILDER.buildBasicBlock();
-        IrBasicBlock afterForBlock = IrBuilder.IRBUILDER.buildBasicBlock();
+        IrBasicBlock condBlock = IrBuilder.IRBUILDER.buildBasicBlock(false);
+        IrBasicBlock forStmt2Block = IrBuilder.IRBUILDER.buildBasicBlock(false);
+        IrBasicBlock stmtBlock = IrBuilder.IRBUILDER.buildBasicBlock(false);
+        IrBasicBlock afterForBlock = IrBuilder.IRBUILDER.buildBasicBlock(false);
         //进入for
         IrBuilder.IRBUILDER.enterLoop(forStmt2Block, afterForBlock);
         //构建forStmt1
@@ -107,19 +107,22 @@ public class StmtFor extends StmtEle {
             forStmt1.buildIR();//将forStmt1加入到enterBlock中
         }
         IrBuilder.IRBUILDER.buildBrInstr(condBlock);//不论有没有初始化都应该跳到condBlock
-        //构建stmt
-        IrBuilder.IRBUILDER.setCurBasicBlock(stmtBlock);
-        stmt.buildIR();
-        IrBuilder.IRBUILDER.buildBrInstr(forStmt2Block);
         //构建cond
         IrBuilder.IRBUILDER.setCurBasicBlock(condBlock);
+        IrBuilder.IRBUILDER.addBasicBlock(condBlock);
         if (cond != null) {
             cond.buildCondIR(stmtBlock, afterForBlock);
         } else {
             IrBuilder.IRBUILDER.buildBrInstr(stmtBlock);//无条件跳转
         }
+        //构建stmt
+        IrBuilder.IRBUILDER.setCurBasicBlock(stmtBlock);
+        IrBuilder.IRBUILDER.addBasicBlock(stmtBlock);
+        stmt.buildIR();
+        IrBuilder.IRBUILDER.buildBrInstr(forStmt2Block);
         //构建forStmt2
         IrBuilder.IRBUILDER.setCurBasicBlock(forStmt2Block);
+        IrBuilder.IRBUILDER.addBasicBlock(forStmt2Block);
         if (forStmt2 != null) {//构建
             forStmt2.buildIR();
         }
@@ -128,6 +131,7 @@ public class StmtFor extends StmtEle {
         IrBuilder.IRBUILDER.leaveLoop();
         //将当前block设置为afterForBlock
         IrBuilder.IRBUILDER.setCurBasicBlock(afterForBlock);
+        IrBuilder.IRBUILDER.addBasicBlock(afterForBlock);
         return null;
     }
 }

@@ -1,17 +1,16 @@
 package mips.instr.r;
 
-import llvm.instr.IrInstr;
 import mips.instr.MipsInstr;
 
-public class MipsAdd extends MipsInstr {
-    //add rd, rs, rt
-    //GPR[rd] <- GPR[rs]+GPR[rt]
+public class MipsSubu extends MipsInstr {
+    //subu rd, rs, rt
+    //GPR[rd] <- GPR[rs] - GPR[rt]
     private int rd;
     private int rs;
     private int rt;
 
-    public MipsAdd(int rd, int rs, int rt) {
-        super("add");
+    public MipsSubu(int rd, int rs, int rt) {
+        super("subu");
         this.rd = rd;
         this.rs = rs;
         this.rt = rt;
