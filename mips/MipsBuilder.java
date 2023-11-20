@@ -1,15 +1,18 @@
 package mips;
 
 import llvm.IrConstInt;
+import llvm.IrValue;
 import llvm.instr.IrInstr;
 import mips.instr.i.*;
 import mips.instr.j.MipsJ;
 import mips.instr.j.MipsJal;
 import mips.instr.other.MipsComment;
+import mips.instr.other.MipsLabel;
 import mips.instr.other.MipsSyscall;
 import mips.instr.r.*;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class MipsBuilder {
     public static MipsBuilder MIPSBUILDER = new MipsBuilder();
@@ -22,6 +25,9 @@ public class MipsBuilder {
     public MipsModule getMipsModule() {
         return mipsModule;
     }
+
+    private HashMap<IrValue, Integer> mipsSymbolTable = new HashMap<>();//一个函数中IrValue的相对于栈指针的偏移
+    private int curOffset = 0;//一个函数中的动态栈顶
 
     //构建整数data
     public void buildMipsGlobalData(String name, int dim, int length, ArrayList<IrConstInt> initValues) {
@@ -164,13 +170,13 @@ public class MipsBuilder {
     }
 
     //构建la
-    public void buildLa(String label) {
-        MipsLa la = new MipsLa(label);
+    public void buildLa(int rt, String label) {
+        MipsLa la = new MipsLa(rt, label);
         mipsModule.addTextData(la);
     }
 
     //构建li
-    public void buildLa(int rt, int imm) {
+    public void buildLi(int rt, int imm) {
         MipsLi li = new MipsLi(rt, imm);
         mipsModule.addTextData(li);
     }
@@ -187,6 +193,12 @@ public class MipsBuilder {
         mipsModule.addTextData(sw);
     }
 
+    //构建sll
+    public void buildSll(int rd, int rt, int s) {
+        MipsSll sll = new MipsSll(rd, rt, s);
+        mipsModule.addTextData(sll);
+    }
+
     //构建JInstr
     //构建j
     public void buildJ(String labelName) {
@@ -198,5 +210,58 @@ public class MipsBuilder {
     public void buildJal(String labelName) {
         MipsJal mipsJal = new MipsJal(labelName);
         mipsModule.addTextData(mipsJal);
+    }
+
+    //获取当前距离栈指针的偏移
+    public int getCurOffset() {
+        return curOffset;
+    }
+
+    //向下一定当前的偏移
+    public int moveCurOffset(int change) {
+        curOffset -= change;
+        return curOffset;
+    }
+
+    //进入新函数,清空当前的偏移,新建一个offset表
+    public void enterFunction() {
+        this.curOffset = 0;
+        this.mipsSymbolTable = new HashMap<>();
+    }
+
+    //添加符号,符号的偏移
+    //对于数组变量需要把指针位置设置到开辟空间的最底下,每次调用数组时使用加操作
+    public void buildArraySymbol(IrValue symbol, int arrayLength) {
+        moveCurOffset(arrayLength * 4);
+        //数组的基地址在curOffset + 4,将数组的基地址存在数组空间的下一个字节,即curOffset
+        buildAddi(8, 29, curOffset + 4);
+        buildSw(8, 29, curOffset);
+        this.mipsSymbolTable.put(symbol, curOffset);
+        //还需移到下一个未被分配的空间,否则会被新分配的变量覆盖内容
+        moveCurOffset(4);
+    }
+
+    //直接添加符号，自动管理偏移
+    public int buildVarSymbol(IrValue symbol) {
+        int offsetAtBuild = curOffset;
+        this.mipsSymbolTable.put(symbol, curOffset);
+        //移动到未分配的空间
+        moveCurOffset(4);
+        return offsetAtBuild;
+    }
+
+    //获得符号的偏移
+    public int getSymbolOffset(IrValue symbol) {
+        return this.mipsSymbolTable.get(symbol);
+    }
+
+    //是否存在符号
+    public boolean hasSymbol(IrValue symbol) {
+        return mipsSymbolTable.containsKey(symbol);
+    }
+
+    //得到符号表
+    public HashMap<IrValue, Integer> getMipsSymbolTable() {
+        return mipsSymbolTable;
     }
 }

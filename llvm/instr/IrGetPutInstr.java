@@ -1,8 +1,11 @@
 package llvm.instr;
 
+import llvm.IrConstInt;
 import llvm.IrValue;
 import llvm.type.IrIntegetType;
 import llvm.type.IrValueType;
+import mips.MipsBuilder;
+import mips.MipsModule;
 
 public class IrGetPutInstr extends IrInstr {
 
@@ -42,5 +45,35 @@ public class IrGetPutInstr extends IrInstr {
             default:
         }
         return sb.toString();
+    }
+
+    @Override
+    public void buildMips() {
+        MipsBuilder.MIPSBUILDER.buildComment(this);
+        switch (getIrInstrType()) {
+            case GETINT:
+                MipsBuilder.MIPSBUILDER.buildLi(1, 5);//v0
+                MipsBuilder.MIPSBUILDER.buildSyscall();
+                int offset = MipsBuilder.MIPSBUILDER.buildVarSymbol(this);
+                MipsBuilder.MIPSBUILDER.buildSw(1, 29, offset);
+                break;
+            case PUTINT:
+                if (getOperand() instanceof IrConstInt) {
+                    MipsBuilder.MIPSBUILDER.buildLi(4, ((IrConstInt) getOperand()).getValue());
+                } else {
+                    //将值lw到a0中
+                    int operandOffset = MipsBuilder.MIPSBUILDER.getSymbolOffset(getOperand());
+                    MipsBuilder.MIPSBUILDER.buildLw(4, 29, operandOffset);
+                }
+                MipsBuilder.MIPSBUILDER.buildLi(1, 1);//v0
+                MipsBuilder.MIPSBUILDER.buildSyscall();
+                break;
+            case PUTCH:
+                MipsBuilder.MIPSBUILDER.buildLi(4, ((IrConstInt) getOperand()).getValue());
+                MipsBuilder.MIPSBUILDER.buildLi(1, 11);//v0
+                MipsBuilder.MIPSBUILDER.buildSyscall();
+                break;
+            default:
+        }
     }
 }

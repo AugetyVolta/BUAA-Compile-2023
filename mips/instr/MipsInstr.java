@@ -1,7 +1,5 @@
 package mips.instr;
 
-import llvm.instr.IrInstr;
-import mips.MipsLabel;
 import mips.MipsValue;
 
 public class MipsInstr extends MipsValue {

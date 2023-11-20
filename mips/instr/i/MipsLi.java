@@ -14,6 +14,8 @@ public class MipsLi extends MipsInstr {
 
     @Override
     public String toString() {
-        return String.format("%s %d", regMap.get(rt).toString().toLowerCase(), imm);
+        return String.format("%s %s, %d", getName(),
+                regMap.get(rt).toString().toLowerCase(),
+                imm);
     }
 }

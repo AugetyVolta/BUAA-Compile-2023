@@ -7,7 +7,7 @@ public class MyConfig {
     public static String llvmOutputPath = "llvm_ir.txt";
     public static String mipsOutputPath = "mips.txt";
     public static boolean lexicalOutput = false;
-    public static boolean parseOutput = false;
+    public static boolean parseOutput = true;
     public static boolean errorOutput = true;
     public static boolean llvmOutput = true;
     public static boolean mipsOutput = true;

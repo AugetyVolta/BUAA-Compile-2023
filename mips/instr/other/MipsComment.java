@@ -13,6 +13,6 @@ public class MipsComment extends MipsInstr {
 
     @Override
     public String toString() {
-        return String.format("# %s", irInstr.toString());
+        return String.format("\n# %s", irInstr.toString());
     }
 }

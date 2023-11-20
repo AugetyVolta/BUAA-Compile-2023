@@ -32,7 +32,9 @@ public class MipsModule {
         for (MipsValue textData : mipsTextData) {
             sb.append(textData.toString()).append("\n");
         }
-        sb.append("end:");
+        sb.append("end:\n");
+        sb.append("li $v0, 10\n");
+        sb.append("syscall");
         return sb.toString();
     }
 }

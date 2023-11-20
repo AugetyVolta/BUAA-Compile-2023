@@ -3,6 +3,7 @@ package llvm.instr;
 import llvm.IrBasicBlock;
 import llvm.IrValue;
 import llvm.type.IrValueType;
+import mips.MipsBuilder;
 
 public class IrBrInstr extends IrInstr {
     private boolean isCond;//是否是条件跳转
@@ -49,6 +50,21 @@ public class IrBrInstr extends IrInstr {
             return String.format("br i1 %s, label %%%s, label %%%s", getCond().getName(), getLabel(1).getName(), getLabel(2).getName());
         } else {
             return String.format("br label %%%s", getLabel(0).getName());
+        }
+    }
+
+    @Override
+    public void buildMips() {
+        MipsBuilder.MIPSBUILDER.buildComment(this);
+        if (isCond) {
+            int condOffset = MipsBuilder.MIPSBUILDER.getSymbolOffset(getCond());
+            MipsBuilder.MIPSBUILDER.buildLw(8, 29, condOffset);
+            //true
+            MipsBuilder.MIPSBUILDER.buildBne(8, 0, getLabel(1).getName());
+            //false
+            MipsBuilder.MIPSBUILDER.buildJ(getLabel(2).getName());
+        } else {
+            MipsBuilder.MIPSBUILDER.buildJ(getLabel(0).getName());
         }
     }
 

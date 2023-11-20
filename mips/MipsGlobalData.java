@@ -37,9 +37,9 @@ public class MipsGlobalData extends MipsValue {
                 if (dim == 0) {
                     sb.append(initValues.get(0).getValue());
                 } else {
-                    for (int i = size - 1; i >= 0; i--) {
+                    for (int i = 0; i < size; i++) {
                         sb.append(initValues.get(i).getValue());
-                        if (i > 0) {
+                        if (i < size - 1) {
                             sb.append(",");
                         }
                     }

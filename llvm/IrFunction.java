@@ -88,7 +88,12 @@ public class IrFunction extends IrUser {
     public void buildMips() {
         //构建函数名
         MipsBuilder.MIPSBUILDER.buildMipsLabel(getName().substring(1));
-        //TODO:参数相关处理
+        //进入函数
+        MipsBuilder.MIPSBUILDER.enterFunction();
+        //填入参数
+        for (IrValue param : params) {
+            MipsBuilder.MIPSBUILDER.buildVarSymbol(param);
+        }
         for (IrBasicBlock basicBlock : basicBlocks) {
             basicBlock.buildMips();
         }

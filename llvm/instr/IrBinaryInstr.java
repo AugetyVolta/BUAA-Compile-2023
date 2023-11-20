@@ -1,7 +1,9 @@
 package llvm.instr;
 
+import llvm.IrConstInt;
 import llvm.IrValue;
 import llvm.type.IrValueType;
+import mips.MipsBuilder;
 
 public class IrBinaryInstr extends IrInstr {
 
@@ -24,4 +26,47 @@ public class IrBinaryInstr extends IrInstr {
         return String.format("%s = %s %s %s, %s", getName(), getIrInstrType().toString().toLowerCase(), getType(), getOperand1().getName(), getOperand2().getName());
     }
 
+    @Override
+    public void buildMips() {
+        MipsBuilder.MIPSBUILDER.buildComment(this);
+        //两侧的东西一定都在内存中已经存了,因此直接获得的即可
+        //operand1
+        if (getOperand1() instanceof IrConstInt) {
+            MipsBuilder.MIPSBUILDER.buildLi(8, ((IrConstInt) getOperand1()).getValue());
+        } else {
+            int offset1 = MipsBuilder.MIPSBUILDER.getSymbolOffset(getOperand1());
+            MipsBuilder.MIPSBUILDER.buildLw(8, 29, offset1);
+        }
+        //operand2
+        if (getOperand2() instanceof IrConstInt) {
+            MipsBuilder.MIPSBUILDER.buildLi(9, ((IrConstInt) getOperand2()).getValue());
+        } else {
+            int offset2 = MipsBuilder.MIPSBUILDER.getSymbolOffset(getOperand2());
+            MipsBuilder.MIPSBUILDER.buildLw(9, 29, offset2);
+        }
+        //开始构建指令
+        switch (getIrInstrType()) {
+            case ADD:
+                MipsBuilder.MIPSBUILDER.buildAdd(10, 8, 9);
+                break;
+            case SUB:
+                MipsBuilder.MIPSBUILDER.buildSub(10, 8, 9);
+                break;
+            case MUL:
+                MipsBuilder.MIPSBUILDER.buildMult(8, 9);
+                MipsBuilder.MIPSBUILDER.buildMflo(10);
+                break;
+            case SDIV:
+                MipsBuilder.MIPSBUILDER.buildDiv(8, 9);
+                MipsBuilder.MIPSBUILDER.buildMflo(10);
+                break;
+            case SREM:
+                MipsBuilder.MIPSBUILDER.buildDiv(8, 9);
+                MipsBuilder.MIPSBUILDER.buildMfhi(10);
+                break;
+        }
+        //将指令的值存入内存
+        int resultOffset = MipsBuilder.MIPSBUILDER.buildVarSymbol(this);
+        MipsBuilder.MIPSBUILDER.buildSw(10, 29, resultOffset);
+    }
 }
