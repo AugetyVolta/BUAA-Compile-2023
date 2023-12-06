@@ -42,6 +42,11 @@ public class IrBuilder {
         return curBasicBlock;
     }
 
+    //向当前函数添加基本块
+    public void addBasicBlock(IrBasicBlock basicBlock) {
+        curFunction.addBasicBlock(basicBlock);
+    }
+
     //设置当前所处函数
     public void setCurFunction(IrFunction irFunction) {
         this.curFunction = irFunction;
@@ -53,6 +58,15 @@ public class IrBuilder {
         String formatName = String.format("%%v%d", varIndex++);
         //修改当前函数的总指令数
         varInFunctionCnt.put(curFunction, varIndex);
+        return formatName;
+    }
+
+    public String generateVarName(IrFunction function) {
+        int varIndex = varInFunctionCnt.getOrDefault(function, 0);
+        //v%d标注指令对应的result变量的名字
+        String formatName = String.format("%%v%d", varIndex++);
+        //修改当前函数的总指令数
+        varInFunctionCnt.put(function, varIndex);
         return formatName;
     }
 
@@ -117,6 +131,7 @@ public class IrBuilder {
         IrBasicBlock irBasicBlock = new IrBasicBlock(formatName, curFunction);
         //将basicBlock加入函数中
         curFunction.addBasicBlock(irBasicBlock);
+        irBasicBlock.setFunction(curFunction);
         //并且会处于新建的basicBlock中
         setCurBasicBlock(irBasicBlock);
         return irBasicBlock;
@@ -130,6 +145,7 @@ public class IrBuilder {
             //将basicBlock加入函数中
             curFunction.addBasicBlock(irBasicBlock);
         }
+        irBasicBlock.setFunction(curFunction);
         //并且会处于新建的basicBlock中
         setCurBasicBlock(irBasicBlock);
         return irBasicBlock;
@@ -141,6 +157,7 @@ public class IrBuilder {
         IrAllocaInstr allocaInstr = new IrAllocaInstr(formatName, irValueType);
         //将指令加入到当前基本块中
         curBasicBlock.addInstr(allocaInstr);
+        allocaInstr.setBasicBlock(curBasicBlock);
         return allocaInstr;
     }
 
@@ -150,6 +167,7 @@ public class IrBuilder {
         IrBinaryInstr irBinaryInstr = new IrBinaryInstr(formatName, irValueType, irInstrType, operand1, operand2);
         //将指令加入到当前基本块中
         curBasicBlock.addInstr(irBinaryInstr);
+        irBinaryInstr.setBasicBlock(curBasicBlock);
         return irBinaryInstr;
     }
 
@@ -161,11 +179,13 @@ public class IrBuilder {
         int size = curBasicBlock.getInstrs().size();
         if (size == 0) {
             curBasicBlock.addInstr(irBrInstr);
+            irBrInstr.setBasicBlock(curBasicBlock);
         } else {
             IrInstr preInstr = curBasicBlock.getInstrs().get(size - 1);
             if (preInstr.getIrInstrType() != IrInstrType.RET &&
                     preInstr.getIrInstrType() != IrInstrType.BR) {
                 curBasicBlock.addInstr(irBrInstr);
+                irBrInstr.setBasicBlock(curBasicBlock);
             }
         }
         return irBrInstr;
@@ -179,11 +199,13 @@ public class IrBuilder {
         int size = curBasicBlock.getInstrs().size();
         if (size == 0) {
             curBasicBlock.addInstr(irBrInstr);
+            irBrInstr.setBasicBlock(curBasicBlock);
         } else {
             IrInstr preInstr = curBasicBlock.getInstrs().get(size - 1);
             if (preInstr.getIrInstrType() != IrInstrType.RET &&
                     preInstr.getIrInstrType() != IrInstrType.BR) {
                 curBasicBlock.addInstr(irBrInstr);
+                irBrInstr.setBasicBlock(curBasicBlock);
             }
         }
         return irBrInstr;
@@ -195,6 +217,7 @@ public class IrBuilder {
         IrCallInstr irCallInstr = new IrCallInstr(formatName, irFunction, arguments);
         //将指令加入到当前基本块中
         curBasicBlock.addInstr(irCallInstr);
+        irCallInstr.setBasicBlock(curBasicBlock);
         return irCallInstr;
     }
 
@@ -204,6 +227,7 @@ public class IrBuilder {
         IrGepInstr irGepInstr = new IrGepInstr(formatName, pointer, offset);
         //将指令加入到当前基本块中
         curBasicBlock.addInstr(irGepInstr);
+        irGepInstr.setBasicBlock(curBasicBlock);
         return irGepInstr;
     }
 
@@ -213,6 +237,7 @@ public class IrBuilder {
         IrIcmpInstr irIcmpInstr = new IrIcmpInstr(formatName, cond, operand1, operand2);
         //将指令加入到当前基本块中
         curBasicBlock.addInstr(irIcmpInstr);
+        irIcmpInstr.setBasicBlock(curBasicBlock);
         return irIcmpInstr;
     }
 
@@ -222,6 +247,7 @@ public class IrBuilder {
         IrLoadInstr irLoadInstr = new IrLoadInstr(formatName, pointer);
         //将指令加入到当前基本块中
         curBasicBlock.addInstr(irLoadInstr);
+        irLoadInstr.setBasicBlock(curBasicBlock);
         return irLoadInstr;
     }
 
@@ -231,6 +257,7 @@ public class IrBuilder {
         IrStoreInstr irStoreInstr = new IrStoreInstr(formatName, fromValue, pointer);
         //将指令加入到当前基本块中
         curBasicBlock.addInstr(irStoreInstr);
+        irStoreInstr.setBasicBlock(curBasicBlock);
         return irStoreInstr;
     }
 
@@ -240,6 +267,7 @@ public class IrBuilder {
         IrRetInstr irRetInstr = new IrRetInstr(formatName, retValue);
         //将指令加入到当前基本块中
         curBasicBlock.addInstr(irRetInstr);
+        irRetInstr.setBasicBlock(curBasicBlock);
         return irRetInstr;
     }
 
@@ -249,6 +277,7 @@ public class IrBuilder {
         IrZextInstr irZextInstr = new IrZextInstr(formatName, targetValueType, srcValue);
         //将指令加入到当前基本块中
         curBasicBlock.addInstr(irZextInstr);
+        irZextInstr.setBasicBlock(curBasicBlock);
         return irZextInstr;
     }
 
@@ -258,6 +287,7 @@ public class IrBuilder {
         IrGetPutInstr irGetPutInstr = new IrGetPutInstr(formatName, IrInstrType.GETINT);
         //将指令加入到当前基本块中
         curBasicBlock.addInstr(irGetPutInstr);
+        irGetPutInstr.setBasicBlock(curBasicBlock);
         return irGetPutInstr;
     }
 
@@ -267,6 +297,7 @@ public class IrBuilder {
         IrGetPutInstr irGetPutInstr = new IrGetPutInstr(formatName, IrInstrType.PUTINT, operand);
         //将指令加入到当前基本块中
         curBasicBlock.addInstr(irGetPutInstr);
+        irGetPutInstr.setBasicBlock(curBasicBlock);
         return irGetPutInstr;
     }
 
@@ -276,11 +307,39 @@ public class IrBuilder {
         IrGetPutInstr irGetPutInstr = new IrGetPutInstr(formatName, IrInstrType.PUTCH, operand);
         //将指令加入到当前基本块中
         curBasicBlock.addInstr(irGetPutInstr);
+        irGetPutInstr.setBasicBlock(curBasicBlock);
         return irGetPutInstr;
     }
 
-    public void addBasicBlock(IrBasicBlock basicBlock) {
-        curFunction.addBasicBlock(basicBlock);
+    public IrPhiInstr buildPhiInstr(IrBasicBlock basicBlock, IrFunction function, ArrayList<IrBasicBlock> predecessors) {
+        //在传入的函数中生成变量名
+        String formatName = generateVarName(function);
+        IrPhiInstr phiInstr = new IrPhiInstr(formatName, predecessors);
+        basicBlock.addInstr(phiInstr);
+        phiInstr.setBasicBlock(basicBlock);
+        return phiInstr;
+    }
+
+    /**
+     * 如果函数只有一个基本块,最后一个块就是当前的块
+     * 如果有多个基本块,if和for都会把最后一个块设为当前基本块
+     * 因此,最后一个块就是当前的基本块
+     */
+    //检查函数最后有没有return指令
+    public void checkReturn() {
+        if (curFunction.getReturnType() == IrIntegetType.INT32) {
+            return;
+        }
+        IrBasicBlock lastBasicBlock = IrBuilder.IRBUILDER.getCurBasicBlock();
+        if (lastBasicBlock.getInstrs().size() == 0) {
+            IrBuilder.IRBUILDER.buildRetInstr(null);
+        } else {
+            int size = lastBasicBlock.getInstrs().size();
+            IrInstr lastInstr = lastBasicBlock.getInstrs().get(size - 1);
+            if (lastInstr.getIrInstrType() != IrInstrType.RET) {
+                IrBuilder.IRBUILDER.buildRetInstr(null);
+            }
+        }
     }
 
 }

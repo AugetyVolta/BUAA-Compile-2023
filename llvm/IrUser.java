@@ -5,13 +5,13 @@ import llvm.type.IrValueType;
 import java.util.ArrayList;
 
 public class IrUser extends IrValue {
-    private ArrayList<IrUse> operands = new ArrayList<>(); //通过use连接的操作数,双向边
+    private ArrayList<IrUse> operands = new ArrayList<>(); //我用了谁
 
     public IrUser(String name, IrValueType type) {
         super(name, type);
     }
 
-    public void addUse(IrUse use) {
+    public void addUseToUsee(IrUse use) {
         operands.add(use);
     }
 
@@ -22,6 +22,10 @@ public class IrUser extends IrValue {
             }
         }
         return null;
+    }
+
+    public ArrayList<IrUse> getOperands() {
+        return operands;
     }
 
     public void modifyOperand(IrValue newValue, int opIndex) {
@@ -40,7 +44,7 @@ public class IrUser extends IrValue {
         } else {
             oldUse.getIrUsee().removeUse(oldUse); // oldUse原对应的value中删去自己
             oldUse.setIrUsee(newValue); //为use设置新的value
-            newValue.addUse(oldUse); //新的value中添加use
+            newValue.addUseToUser(oldUse); //新的value中添加use
         }
     }
 

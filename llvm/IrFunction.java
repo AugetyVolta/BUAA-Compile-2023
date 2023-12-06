@@ -10,14 +10,12 @@ import java.util.ArrayList;
 
 public class IrFunction extends IrUser {
     private IrIntegetType returnType; //函数返回值
-    private ArrayList<IrValue> params;//对于函数来说，是形参param
-    private ArrayList<IrBasicBlock> basicBlocks;//函数中的基本块
+    private ArrayList<IrValue> params = new ArrayList<>();//对于函数来说，是形参param
+    private ArrayList<IrBasicBlock> basicBlocks = new ArrayList<>();//函数中的基本块
 
     public IrFunction(String name, IrIntegetType returnType) {
         super(name, IrValueType.FUNCTION);
         this.returnType = returnType;
-        this.params = new ArrayList<>();
-        this.basicBlocks = new ArrayList<>();
     }
 
     public IrIntegetType getReturnType() {
@@ -42,27 +40,6 @@ public class IrFunction extends IrUser {
 
     public ArrayList<IrBasicBlock> getBasicBlocks() {
         return basicBlocks;
-    }
-
-    public void checkReturn() {//检查最后有没有return指令
-        if (returnType == IrIntegetType.INT32) {
-            return;
-        }
-        /**
-         * 如果函数只有一个基本块,最后一个块就是当前的块
-         * 如果有多个基本块,if和for都会把最后一个块设为当前基本块
-         * 因此,最后一个块就是当前的基本块
-         */
-        IrBasicBlock lastBasicBlock = IrBuilder.IRBUILDER.getCurBasicBlock();
-        if (lastBasicBlock.getInstrs().size() == 0) {
-            IrBuilder.IRBUILDER.buildRetInstr(null);
-        } else {
-            int size = lastBasicBlock.getInstrs().size();
-            IrInstr lastInstr = lastBasicBlock.getInstrs().get(size - 1);
-            if (lastInstr.getIrInstrType() != IrInstrType.RET) {
-                IrBuilder.IRBUILDER.buildRetInstr(null);
-            }
-        }
     }
 
     @Override

@@ -29,6 +29,10 @@ public class IrModule extends IrValue {
         irFunctions.add(irFunction);
     }
 
+    public ArrayList<IrFunction> getIrFunctions() {
+        return irFunctions;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();

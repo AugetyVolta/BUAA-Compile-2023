@@ -9,7 +9,7 @@ public class IrValue {
     //对于每个value的name
     private String name;
     private IrValueType type;
-    private ArrayList<IrUse> irUses;//def-use链
+    private ArrayList<IrUse> irUses;//谁用了我
 
     public IrValue(String name, IrValueType type) {
         this.name = name;
@@ -29,7 +29,7 @@ public class IrValue {
         return irUses;
     }
 
-    public void addUse(IrUse use) {
+    public void addUseToUser(IrUse use) {
         this.irUses.add(use);
     }
 
@@ -37,7 +37,7 @@ public class IrValue {
         Iterator<IrUse> iterator = irUses.iterator();
         while (iterator.hasNext()) {
             IrUse use = iterator.next();
-            if (use == oldUse) {
+            if (use.equals(oldUse)) {
                 iterator.remove();
                 break;
             }
@@ -49,6 +49,7 @@ public class IrValue {
         return type + " " + name;
     }
 
-    public void buildMips() {}
+    public void buildMips() {
+    }
 
 }

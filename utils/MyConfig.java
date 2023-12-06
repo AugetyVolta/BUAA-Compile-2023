@@ -12,4 +12,5 @@ public class MyConfig {
     public static boolean llvmOutput = true;
     public static boolean mipsOutput = true;
     public static boolean onDebug = false;
+    public static boolean OpenMem2Reg = true;
 }

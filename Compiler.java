@@ -4,6 +4,7 @@ import llvm.IrBuilder;
 import llvm.IrModule;
 import mips.MipsBuilder;
 import mips.MipsModule;
+import optimizer.Optimizer;
 import parser.Parser;
 import parser.node.CompUnitNode;
 import error.Error;
@@ -49,13 +50,14 @@ public class Compiler {
         }
         compUnitNode.buildIR();
         IrModule module = IrBuilder.IRBUILDER.getModule();
+        Optimizer optimizer = new Optimizer(module);
         if (llvmOutput) {
             writeFile(llvmOutputPath, module.toString());
         }
-        module.buildMips();
-        MipsModule mipsModule = MipsBuilder.MIPSBUILDER.getMipsModule();
-        if (mipsOutput) {
-            writeFile(mipsOutputPath, mipsModule.toString());
-        }
+//        module.buildMips();
+//        MipsModule mipsModule = MipsBuilder.MIPSBUILDER.getMipsModule();
+//        if (mipsOutput) {
+//            writeFile(mipsOutputPath, mipsModule.toString());
+//        }
     }
 }

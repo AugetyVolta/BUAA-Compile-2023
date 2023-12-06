@@ -11,8 +11,8 @@ public class IrUse {
         this.irUser = irUser;
         this.irUsee = irUsee;
         this.operateIndex = operateIndex;
-        irUser.addUse(this);
-        irUsee.addUse(this);
+        irUser.addUseToUsee(this);
+        irUsee.addUseToUser(this);
     }
 
     public IrUser getIrUser() {

@@ -130,7 +130,7 @@ public class FuncDefNode extends Node {
         //去build函数中的block
         super.buildIR();
         //如果没有ret,需要添加一条return指令,只需要检查对于void类型的函数最后一条指令是否是ret void即可,没有就补上
-        irFunction.checkReturn();
+        IrBuilder.IRBUILDER.checkReturn();
         //退出符号表
         SymbolManager.Manager.leaveBlock();
         return null;

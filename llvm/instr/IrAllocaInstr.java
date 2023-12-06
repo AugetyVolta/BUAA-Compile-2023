@@ -20,6 +20,10 @@ public class IrAllocaInstr extends IrInstr {
         return String.format("%s = alloca %s", getName(), refType);
     }
 
+    public IrValueType getRefType() {
+        return refType;
+    }
+
     @Override
     public void buildMips() {
         MipsBuilder.MIPSBUILDER.buildComment(this);
