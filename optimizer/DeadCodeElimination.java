@@ -63,7 +63,9 @@ public class DeadCodeElimination {
                 (instr instanceof IrCallInstr) ||
                 (instr instanceof IrGetPutInstr) ||
                 (instr instanceof IrRetInstr) ||
-                (instr instanceof IrStoreInstr) //全局变量赋值
+                (instr instanceof IrStoreInstr) ||
+                (instr instanceof IrPcopyInstr) ||
+                (instr instanceof IrMoveInstr)//全局变量赋值
         ) {
             return true;
         }

@@ -1,8 +1,6 @@
 package optimizer;
 
-import llvm.IrBasicBlock;
-import llvm.IrFunction;
-import llvm.IrModule;
+import llvm.*;
 import llvm.instr.IrBrInstr;
 import llvm.instr.IrInstr;
 import llvm.instr.IrRetInstr;
@@ -23,6 +21,8 @@ public class MergeBlock {
         MergerOneOutBlock();
         //合并只有一个空跳转指令的块
         MergeEmptyBlock();
+        //处理掉br指令条件跳转但是跳转到同一个块的问题
+        removeFakeCondBr();
     }
 
     public void MergerOneOutBlock() {
@@ -106,5 +106,53 @@ public class MergeBlock {
                 }
             }
         }
+    }
+
+    public void removeFakeCondBr() {
+        for (IrFunction function : module.getIrFunctions()) {
+            while (needRemoveFakeCondBr(function)) {
+                for (IrBasicBlock basicBlock : function.getBasicBlocks()) {
+                    IrInstr lastInstr = basicBlock.getLastInstr();
+                    //如果br的两个选择都跳入同一个位置
+                    if (lastInstr instanceof IrBrInstr && ((IrBrInstr) lastInstr).isCond() && lastInstr.getOperand(1).equals(lastInstr.getOperand(2))) {
+                        //随便删除一个后继//这里不用删了,因为在上面已经特判了不会出现有相同的后继，插入时
+                        //basicBlock.getNext().remove(0);
+                        //处理br的cond条件的use关系
+                        IrValue cond = ((IrBrInstr) lastInstr).getCond();
+                        if (cond.getIrUses().size() == 1) { //说明只是被该条件br语句使用
+                            if (cond instanceof IrInstr) {
+                                //删除cond这条指令
+                                IrBasicBlock parentBlock = ((IrInstr) cond).getBasicBlock();
+                                parentBlock.getInstrs().remove(cond);
+                                //删除这条指令中的operand关系
+                                ArrayList<IrUse> uses = ((IrInstr) cond).getOperands();
+                                for (IrUse use : uses) {
+                                    IrValue usee = use.getIrUsee();
+                                    usee.removeUse(use);
+                                }
+                            }
+                        }
+                        //删除旧跳转,插入新跳转
+                        basicBlock.getInstrs().remove(lastInstr);
+                        IrBrInstr brInstr = new IrBrInstr("", basicBlock.getNext().get(0));
+                        brInstr.setBasicBlock(basicBlock);
+                        basicBlock.getInstrs().add(brInstr);
+                    }
+                }
+                MergeEmptyBlock();
+            }
+        }
+    }
+
+    public boolean needRemoveFakeCondBr(IrFunction function) {
+        for (IrBasicBlock basicBlock : function.getBasicBlocks()) {
+            IrInstr lastInstr = basicBlock.getLastInstr();
+            if (lastInstr instanceof IrBrInstr &&
+                    ((IrBrInstr) lastInstr).isCond() &&
+                    lastInstr.getOperand(1).equals(lastInstr.getOperand(2))) {
+                return true;
+            }
+        }
+        return false;
     }
 }
