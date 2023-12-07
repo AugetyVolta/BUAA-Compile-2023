@@ -72,8 +72,19 @@ public class IrFunction extends IrUser {
         for (IrValue param : params) {
             MipsBuilder.MIPSBUILDER.buildVarSymbol(param);
         }
-        for (IrBasicBlock basicBlock : basicBlocks) {
-            basicBlock.buildMips();
+        //相邻块跳转优化
+        for (int i = 0; i < basicBlocks.size(); i++) {
+            IrBasicBlock basicBlock = basicBlocks.get(i);
+            if (i < basicBlocks.size() - 1) {
+                if (basicBlock.getNext().size() == 1 &&
+                        basicBlock.getNext().get(0).equals(basicBlocks.get(i + 1))) {
+                    basicBlock.buildMipsWithoutBr();
+                } else {
+                    basicBlock.buildMips();
+                }
+            } else {
+                basicBlock.buildMips();
+            }
         }
     }
 }

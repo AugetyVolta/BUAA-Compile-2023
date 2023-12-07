@@ -5,7 +5,6 @@ import llvm.type.IrValueType;
 import mips.MipsBuilder;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 
 import static optimizer.Mem2Reg.removeDeadUse;
 
@@ -34,7 +33,7 @@ public class IrBasicBlock extends IrValue {
 
     public void setPcopy() {
         for (IrPcopyInstr pcopy : PCList) {
-            insertPcopy(pcopy);
+            insertBeforeLast(pcopy);
         }
     }
 
@@ -54,7 +53,11 @@ public class IrBasicBlock extends IrValue {
         }
     }
 
-    public void insertPcopy(IrInstr instr) {
+    public void insertInHead(IrInstr instr) {
+        instrs.add(0, instr);
+    }
+
+    public void insertBeforeLast(IrInstr instr) {
         instrs.add(instrs.size() - 1, instr);
     }
 
@@ -111,6 +114,16 @@ public class IrBasicBlock extends IrValue {
         MipsBuilder.MIPSBUILDER.buildMipsLabel(getName());
         for (IrInstr instr : instrs) {
             instr.buildMips();
+        }
+    }
+
+    public void buildMipsWithoutBr() {
+        //构建基本块的label
+        MipsBuilder.MIPSBUILDER.buildMipsLabel(getName());
+        for (IrInstr instr : instrs) {
+            if (!(instr instanceof IrBrInstr)) {
+                instr.buildMips();
+            }
         }
     }
 }
