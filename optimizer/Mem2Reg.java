@@ -3,7 +3,6 @@ package optimizer;
 import llvm.*;
 import llvm.instr.*;
 import llvm.type.IrIntegetType;
-import llvm.type.IrValueType;
 
 import java.util.*;
 
@@ -15,9 +14,9 @@ public class Mem2Reg {
     private final HashMap<IrBasicBlock, IrBasicBlock> iDom = new HashMap<>();//A被B dom,否则B无法去dom多个块
     private final HashMap<IrBasicBlock, ArrayList<IrBasicBlock>> iDoms = new HashMap<>();//A直接支配集合B
     private final HashMap<IrBasicBlock, ArrayList<IrBasicBlock>> DF = new HashMap<>();//A的支配边界
-    private final HashMap<IrInstr, ArrayList<IrInstr>> defInstrs = new HashMap<>();//重新定义了alloca指令的指令
-    private final HashMap<IrInstr, ArrayList<IrInstr>> useInstrs = new HashMap<>();//使用了alloca指令的指令
-    private Stack<IrValue> defs = new Stack<>();
+    private final HashMap<IrInstr, ArrayList<IrInstr>> defs = new HashMap<>();//重新定义了alloca指令的指令
+    private final HashMap<IrInstr, ArrayList<IrInstr>> uses = new HashMap<>();//使用了alloca指令的指令
+    private Stack<IrValue> InComingVals = new Stack<>();
 
     public Mem2Reg(IrModule module) {
         this.module = module;
@@ -26,6 +25,7 @@ public class Mem2Reg {
         buildIDom();
         buildDF();
         mem2Reg();
+        removeLSA();
     }
 
     public void buildCFG() {
@@ -58,6 +58,7 @@ public class Mem2Reg {
         }
     }
 
+    //bfs从根节点走一遍,没有遍历到的节点被删除
     public void deleteUnreachableBlock() {
         ArrayList<IrFunction> functions = module.getIrFunctions();
         for (IrFunction function : functions) {
@@ -128,6 +129,7 @@ public class Mem2Reg {
         }
     }
 
+    //节点删除法构建支配树
     public void buildDom() {
         ArrayList<IrFunction> functions = module.getIrFunctions();
         for (IrFunction function : functions) {
@@ -283,24 +285,23 @@ public class Mem2Reg {
                     }
                 }
             }
-            removeLSA(function);
         }
     }
 
     public void insertPhi(IrInstr instr, IrFunction function) {
         //buildDefUse
-        useInstrs.put(instr, new ArrayList<>());
-        defInstrs.put(instr, new ArrayList<>());
-        defs = new Stack<>();
-        defs.push(new IrConstInt(0));
+        uses.put(instr, new ArrayList<>());
+        defs.put(instr, new ArrayList<>());
+        InComingVals = new Stack<>();
+        InComingVals.push(new IrConstInt(0));
         ArrayList<IrBasicBlock> defBlock = new ArrayList<>();
         ArrayList<IrUse> uses = instr.getIrUses();
         for (IrUse use : uses) {
             IrUser user = use.getIrUser();
             if (user instanceof IrLoadInstr) {
-                useInstrs.get(instr).add((IrInstr) user);
+                this.uses.get(instr).add((IrInstr) user);
             } else if (user instanceof IrStoreInstr) {
-                defInstrs.get(instr).add((IrInstr) user);
+                defs.get(instr).add((IrInstr) user);
                 if (!defBlock.contains(((IrStoreInstr) user).getBasicBlock())) {
                     defBlock.add(((IrStoreInstr) user).getBasicBlock());
                 }
@@ -318,8 +319,8 @@ public class Mem2Reg {
                 if (!F.contains(Y)) {
                     ArrayList<IrInstr> instrInY = Y.getInstrs();
                     IrPhiInstr phiInstr = IrBuilder.IRBUILDER.buildPhiInstr(Y, function, Y.getPrev()); //插入到Y的开头
-                    defInstrs.get(instr).add(phiInstr);
-                    useInstrs.get(instr).add(phiInstr);
+                    defs.get(instr).add(phiInstr);
+                    this.uses.get(instr).add(phiInstr);
                     instrInY.add(0, phiInstr);
                     F.add(Y);
                     if (!defBlock.contains(Y)) {
@@ -338,25 +339,20 @@ public class Mem2Reg {
             if (instr.needDelete) {
                 continue;
             }
+            if (uses.get(allocaInstr).contains(instr) && !(instr instanceof IrPhiInstr)) {
+                //对于load指令来说,需要替换等号左边的部分,将之后的use替换
+                replaceAllUse(instr, InComingVals.peek());
+                instr.needDelete = true;
+            }
             //at def: push onto stack
-            if (defInstrs.get(allocaInstr).contains(instr)) { //store instr
+            else if (defs.get(allocaInstr).contains(instr)) { //store instr
                 if (instr instanceof IrStoreInstr) {
-                    defs.push(((IrStoreInstr) instr).getFrom());
+                    InComingVals.push(((IrStoreInstr) instr).getFrom());
                     instr.needDelete = true;
-                    defTime++;
                 } else {
-                    defs.push(instr); //phi
-                    defTime++;
+                    InComingVals.push(instr); //phi
                 }
-            } else if (useInstrs.get(allocaInstr).contains(instr)) {
-                if (instr instanceof IrLoadInstr) {
-                    //对于load指令来说,需要替换等号左边的部分,将之后的use替换
-                    replaceAllUse(instr, defs.peek());
-                    instr.needDelete = true;
-                } else { //phi
-                    defs.push(instr);
-                    defTime++;
-                }
+                defTime++;
             }
         }
         //给后继块的phi指令插入选择
@@ -366,8 +362,8 @@ public class Mem2Reg {
                 if (instr.needDelete) {
                     continue;
                 }
-                if (useInstrs.get(allocaInstr).contains(instr) && instr instanceof IrPhiInstr) {
-                    ((IrPhiInstr) instr).setOperand(entryBlock, defs.peek());
+                if (uses.get(allocaInstr).contains(instr) && instr instanceof IrPhiInstr) {
+                    ((IrPhiInstr) instr).setOperand(entryBlock, InComingVals.peek());
                 }
             }
         }
@@ -377,7 +373,7 @@ public class Mem2Reg {
         }
         //for each def in this block pop from stack
         for (int i = 0; i < defTime; i++) {
-            defs.pop();
+            InComingVals.pop();
         }
     }
 
@@ -393,14 +389,25 @@ public class Mem2Reg {
     }
 
     //remove Load Store Alloca
-    public void removeLSA(IrFunction function) {
-        for (IrBasicBlock basicBlock : function.getBasicBlocks()) {
-            ArrayList<IrInstr> instrs = basicBlock.getInstrs();
-            Iterator<IrInstr> it = instrs.iterator();
-            while (it.hasNext()) {
-                IrInstr instr = it.next();
-                if (instr.needDelete) {
-                    it.remove();
+    public void removeLSA() {
+        for (IrFunction function : module.getIrFunctions()) {
+            for (IrBasicBlock basicBlock : function.getBasicBlocks()) {
+                ArrayList<IrInstr> instrs = basicBlock.getInstrs();
+                Iterator<IrInstr> it = instrs.iterator();
+                while (it.hasNext()) {
+                    IrInstr instr = it.next();
+                    if (instr.needDelete) {
+                        it.remove();
+                    }
+                    //删除引用次数为0的指令
+                    else if (!(instr instanceof IrBrInstr) &&
+                            !(instr instanceof IrCallInstr) &&
+                            !(instr instanceof IrGetPutInstr) &&
+                            !(instr instanceof IrRetInstr) &&
+                            !(instr instanceof IrStoreInstr) && //全局变量赋值
+                            instr.getIrUses().size() == 0) {
+                        it.remove();
+                    }
                 }
             }
         }

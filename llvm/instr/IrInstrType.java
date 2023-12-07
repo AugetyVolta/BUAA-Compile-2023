@@ -15,6 +15,8 @@ public enum IrInstrType {
     STORE,
     GETELEMENTPTR,
     PHI,
+    PCOPY,
+    MOVE,
     ZEXT,
     TRUNC,
     BR,

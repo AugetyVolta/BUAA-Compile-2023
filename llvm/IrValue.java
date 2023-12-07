@@ -21,6 +21,10 @@ public class IrValue {
         return name;
     }
 
+    public void setName(String name) {
+        this.name = name;
+    }
+
     public IrValueType getType() {
         return type;
     }

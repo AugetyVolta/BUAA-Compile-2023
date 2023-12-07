@@ -19,12 +19,27 @@ public class IrBasicBlock extends IrValue {
     private ArrayList<IrValue> out = new ArrayList<>();//out
     private ArrayList<IrValue> def = new ArrayList<>(); //def
     private ArrayList<IrValue> use = new ArrayList<>();//use
+    private ArrayList<IrPcopyInstr> PCList = new ArrayList<>();
 
     public IrBasicBlock(String name, IrFunction function) {
         super(name, IrValueType.BBLOCK);
         this.instrs = new ArrayList<>();
         this.function = function;
         this.canAdd = true;
+    }
+
+    public void addPcopy(IrPcopyInstr instr) {
+        PCList.add(instr);
+    }
+
+    public void setPcopy() {
+        for (IrPcopyInstr pcopy : PCList) {
+            insertPcopy(pcopy);
+        }
+    }
+
+    public ArrayList<IrPcopyInstr> getPCList() {
+        return PCList;
     }
 
     public void addInstr(IrInstr instr) {
@@ -37,6 +52,14 @@ public class IrBasicBlock extends IrValue {
             //避免mem2reg时alloc找到被删除的load和store
             removeDeadUse(instr);
         }
+    }
+
+    public void insertPcopy(IrInstr instr) {
+        instrs.add(instrs.size() - 1, instr);
+    }
+
+    public void insertMove(IrInstr instr) {
+        instrs.add(instrs.size() - 1, instr);
     }
 
     public ArrayList<IrInstr> getInstrs() {

@@ -19,6 +19,10 @@ public class IrPhiInstr extends IrInstr {
         modifyOperand(operand, predecessors.indexOf(pre));
     }
 
+    public int getOps() {
+        return predecessors.size();
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();

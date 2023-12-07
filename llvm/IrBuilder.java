@@ -137,6 +137,18 @@ public class IrBuilder {
         return irBasicBlock;
     }
 
+    public IrBasicBlock buildBasicBlock(IrFunction function) {
+        //b%d标注基本块的名字
+        String formatName = String.format("b%d", basicBlockCnt++);
+        IrBasicBlock irBasicBlock = new IrBasicBlock(formatName, function);
+        //将basicBlock加入函数中
+        function.addBasicBlock(irBasicBlock);
+        irBasicBlock.setFunction(function);
+        //并且会处于新建的basicBlock中
+        setCurBasicBlock(irBasicBlock);
+        return irBasicBlock;
+    }
+
     public IrBasicBlock buildBasicBlock(boolean addOrNot) {
         //b%d标注基本块的名字
         String formatName = String.format("b%d", basicBlockCnt++);
@@ -209,6 +221,14 @@ public class IrBuilder {
             }
         }
         return irBrInstr;
+    }
+
+    public void buildBrInstr(IrFunction function, IrBasicBlock curBasicBlock, IrBasicBlock targetBlock) {
+        String formatName = generateVarName(function);
+        IrBrInstr irBrInstr = new IrBrInstr(formatName, targetBlock);
+        //加入到基本块中
+        curBasicBlock.addInstr(irBrInstr);
+        irBrInstr.setBasicBlock(curBasicBlock);
     }
 
     //构建call指令

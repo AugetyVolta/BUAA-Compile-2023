@@ -54,10 +54,10 @@ public class Compiler {
         if (llvmOutput) {
             writeFile(llvmOutputPath, module.toString());
         }
-//        module.buildMips();
-//        MipsModule mipsModule = MipsBuilder.MIPSBUILDER.getMipsModule();
-//        if (mipsOutput) {
-//            writeFile(mipsOutputPath, mipsModule.toString());
-//        }
+        module.buildMips();
+        MipsModule mipsModule = MipsBuilder.MIPSBUILDER.getMipsModule();
+        if (mipsOutput) {
+            writeFile(mipsOutputPath, mipsModule.toString());
+        }
     }
 }
