@@ -399,15 +399,6 @@ public class Mem2Reg {
                     if (instr.needDelete) {
                         it.remove();
                     }
-                    //删除引用次数为0的指令
-                    else if (!(instr instanceof IrBrInstr) &&
-                            !(instr instanceof IrCallInstr) &&
-                            !(instr instanceof IrGetPutInstr) &&
-                            !(instr instanceof IrRetInstr) &&
-                            !(instr instanceof IrStoreInstr) && //全局变量赋值
-                            instr.getIrUses().size() == 0) {
-                        it.remove();
-                    }
                 }
             }
         }

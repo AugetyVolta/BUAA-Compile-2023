@@ -12,6 +12,7 @@ public class IrFunction extends IrUser {
     private IrIntegetType returnType; //函数返回值
     private ArrayList<IrValue> params = new ArrayList<>();//对于函数来说，是形参param
     private ArrayList<IrBasicBlock> basicBlocks = new ArrayList<>();//函数中的基本块
+    public boolean isCalled = false;
 
     public IrFunction(String name, IrIntegetType returnType) {
         super(name, IrValueType.FUNCTION);

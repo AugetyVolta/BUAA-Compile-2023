@@ -34,8 +34,4 @@ public class IrUse {
     public int getOperateIndex() {
         return operateIndex;
     }
-
-    public void setOperateIndex(int operateIndex) {
-        this.operateIndex = operateIndex;
-    }
 }

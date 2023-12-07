@@ -14,8 +14,9 @@ public class Optimizer {
             new Mem2Reg(module);
             writeFile("llvm_phi.txt", module.toString());
         }
-
-
+        new DeadCodeElimination(module);
+        new ConstSpread(module);
+        new DeadCodeElimination(module);
         if (OpenMem2Reg) {
             new RemovePhi(module);
         }

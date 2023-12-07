@@ -28,6 +28,10 @@ public class IrGlobalVariable extends IrValue {
         }
     }
 
+    public boolean isConst() {
+        return isConst;
+    }
+
     public void addInitValue(IrConstInt constInt) {
         initValues.add(constInt);
     }
@@ -36,6 +40,10 @@ public class IrGlobalVariable extends IrValue {
         if (initValues != null) {
             this.initValues = initValues;
         }
+    }
+
+    public ArrayList<IrConstInt> getInitValues() {
+        return initValues;
     }
 
     public int getDim() {//获取维度

@@ -33,8 +33,6 @@ public class MipsModule {
             sb.append(textData.toString()).append("\n");
         }
         sb.append("end:\n");
-        sb.append("li $v0, 10\n");
-        sb.append("syscall");
         return sb.toString();
     }
 }

@@ -25,6 +25,10 @@ public class IrModule extends IrValue {
         irGlobalVariables.add(irGlobalVariable);
     }
 
+    public ArrayList<IrGlobalVariable> getIrGlobalVariables() {
+        return irGlobalVariables;
+    }
+
     public void addIrFunction(IrFunction irFunction) {
         irFunctions.add(irFunction);
     }

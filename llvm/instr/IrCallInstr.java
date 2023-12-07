@@ -17,6 +17,8 @@ public class IrCallInstr extends IrInstr {
         super(name, irFunction.getReturnType(), IrInstrType.CALL);
         this.argumentSize = arguments.size();
         modifyOperand(irFunction, 0);
+        //将函数是否被调用设置为true
+        irFunction.isCalled = true;
         //需要构建use-def关系,需要把所有的argument加入到操作数中
         for (int i = 0; i < arguments.size(); i++) {
             modifyOperand(arguments.get(i), i + 1);
