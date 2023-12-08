@@ -1,6 +1,7 @@
 package llvm;
 
 import llvm.instr.*;
+import llvm.type.IrArrayType;
 import llvm.type.IrIntegetType;
 import llvm.type.IrValueType;
 
@@ -14,6 +15,7 @@ public class IrBuilder {
     private IrBasicBlock curBasicBlock;//当前所处基本块
     private IrFunction curFunction;//当前所处函数
     private int globalVarCnt = 0;//全局变量的数量
+    private int constStrCnt = 0;//常量字符串的数量
     private int paramCnt = 0;//形参的数量
     private int basicBlockCnt = 0;//基本块的数量
     private final HashMap<IrFunction, Integer> varInFunctionCnt;//记录每一个函数块中的参数个数
@@ -251,6 +253,16 @@ public class IrBuilder {
         return irGepInstr;
     }
 
+    //构建字符串输出的getElementPtr指令
+    public IrGepInstr buildGepInstr(IrValue pointer) {
+        String formatName = generateVarName();
+        IrGepInstr irGepInstr = new IrGepInstr(formatName, pointer);
+        //将指令加入到当前基本块中
+        curBasicBlock.addInstr(irGepInstr);
+        irGepInstr.setBasicBlock(curBasicBlock);
+        return irGepInstr;
+    }
+
     //构建Icmp指令
     public IrIcmpInstr buildIcmpInstr(IrInstrType cond, IrValue operand1, IrValue operand2) {
         String formatName = generateVarName();
@@ -329,6 +341,26 @@ public class IrBuilder {
         curBasicBlock.addInstr(irGetPutInstr);
         irGetPutInstr.setBasicBlock(curBasicBlock);
         return irGetPutInstr;
+    }
+
+    //构建putstr指令
+    public IrGetPutInstr buildPutStrInstr(IrValue operand) {
+        String formatName = generateVarName();
+        IrGetPutInstr irGetPutInstr = new IrGetPutInstr(formatName, IrInstrType.PUTSTR, operand);
+        //将指令加入到当前基本块中
+        curBasicBlock.addInstr(irGetPutInstr);
+        irGetPutInstr.setBasicBlock(curBasicBlock);
+        return irGetPutInstr;
+    }
+
+    //构建constStr
+    public IrConstStr buildConstStr(String content) {
+        String formatName = String.format("@s%d", constStrCnt++);
+        IrArrayType arrayType = new IrArrayType(content.length() + 1, IrIntegetType.INT8);
+        IrConstStr constStr = new IrConstStr(formatName, arrayType, content);
+        //加入module中
+        module.addConstStr(constStr);
+        return constStr;
     }
 
     public IrPhiInstr buildPhiInstr(IrBasicBlock basicBlock, IrFunction function, ArrayList<IrBasicBlock> predecessors) {

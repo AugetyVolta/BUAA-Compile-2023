@@ -24,6 +24,7 @@ public enum IrInstrType {
     GETINT,//getint
     PUTINT,//putint
     PUTCH,//putch
+    PUTSTR,//putstr
     EQ,// ==
     NE,// !=
     SLT, // < 有符号比较

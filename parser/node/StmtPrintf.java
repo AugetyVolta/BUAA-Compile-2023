@@ -3,6 +3,7 @@ package parser.node;
 import lexer.token.SyntaxType;
 import llvm.IrBuilder;
 import llvm.IrConstInt;
+import llvm.IrConstStr;
 import llvm.IrValue;
 
 import java.util.ArrayList;
@@ -66,17 +67,28 @@ public class StmtPrintf extends StmtEle {
         int expIndex = 0;
         String s = strcon.getToken().getValue();
         int length = s.length();
-        for (int i = 1; i < length-1; i++) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 1; i < length - 1; i++) {
             char c = s.charAt(i);
             if (c == '%') {
+                if (!sb.isEmpty()) {
+                    IrConstStr constStr = IrBuilder.IRBUILDER.buildConstStr(sb.toString());
+                    IrBuilder.IRBUILDER.buildPutStrInstr(IrBuilder.IRBUILDER.buildGepInstr(constStr));
+                    sb.setLength(0);//清空sb
+                }
                 i++;
                 IrBuilder.IRBUILDER.buildPutIntInstr(exps.get(expIndex++).buildIR());
             } else if (c == '\\') {
                 i++;
-                IrBuilder.IRBUILDER.buildPutCharInstr(new IrConstInt('\n'));
+                sb.append('\n');
             } else {
-                IrBuilder.IRBUILDER.buildPutCharInstr(new IrConstInt(c));
+                sb.append(c);
             }
+        }
+        if (!sb.isEmpty()) {
+            IrConstStr constStr = IrBuilder.IRBUILDER.buildConstStr(sb.toString());
+            IrBuilder.IRBUILDER.buildPutStrInstr(IrBuilder.IRBUILDER.buildGepInstr(constStr));
+            sb.setLength(0);//清空sb
         }
         return null;
     }

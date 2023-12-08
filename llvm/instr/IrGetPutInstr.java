@@ -42,6 +42,11 @@ public class IrGetPutInstr extends IrInstr {
                 sb.append(getOperand().getType()).append(" ").append(getOperand().getName());
                 sb.append(")");
                 break;
+            case PUTSTR:
+                sb.append("call void @putstr(");
+                sb.append(getOperand().getType()).append(" ").append(getOperand().getName());
+                sb.append(")");
+                break;
             default:
         }
         return sb.toString();
@@ -71,6 +76,11 @@ public class IrGetPutInstr extends IrInstr {
             case PUTCH:
                 MipsBuilder.MIPSBUILDER.buildLi(4, ((IrConstInt) getOperand()).getValue());
                 MipsBuilder.MIPSBUILDER.buildLi(1, 11);//v0
+                MipsBuilder.MIPSBUILDER.buildSyscall();
+                break;
+            case PUTSTR:
+                MipsBuilder.MIPSBUILDER.buildLa(4, ((IrGepInstr) getOperand()).getPointer().getName().substring(1));
+                MipsBuilder.MIPSBUILDER.buildLi(1, 4);//v0
                 MipsBuilder.MIPSBUILDER.buildSyscall();
                 break;
             default:

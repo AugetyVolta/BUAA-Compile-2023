@@ -1,6 +1,7 @@
 package llvm.instr;
 
 import llvm.IrConstInt;
+import llvm.IrConstStr;
 import llvm.IrGlobalVariable;
 import llvm.IrValue;
 import llvm.type.IrArrayType;
@@ -16,6 +17,13 @@ public class IrGepInstr extends IrInstr {
         super(name, new IrPointerType(IrIntegetType.INT32), IrInstrType.GETELEMENTPTR);
         modifyOperand(pointer, 0);
         modifyOperand(offset, 1);
+    }
+
+    //用于字符串输出的Gep指令
+    public IrGepInstr(String name, IrValue pointer) {
+        super(name, new IrPointerType(IrIntegetType.INT8), IrInstrType.GETELEMENTPTR);
+        modifyOperand(pointer, 0);
+        modifyOperand(new IrConstInt(0), 1);
     }
 
     public IrValue getPointer() {
@@ -43,6 +51,10 @@ public class IrGepInstr extends IrInstr {
     @Override
     public void buildMips() {
         MipsBuilder.MIPSBUILDER.buildComment(this);
+        //如果是字符串常量,就不需要build这个load指令了,因为直接访问标签就行
+        if (getPointer() instanceof IrConstStr) {
+            return;
+        }
         //取出目标所在的地址
         if (getPointer() instanceof IrGlobalVariable) {//如果是全局变量
             //基地址
