@@ -90,8 +90,8 @@ public class RemovePhi {
         for (IrBasicBlock basicBlock : function.getBasicBlocks()) {
             ArrayList<IrMoveInstr> moveList = new ArrayList<>();
             ArrayList<IrPcopyInstr> pcopyList = basicBlock.getPCList();
-            Iterator<IrPcopyInstr> it = pcopyList.iterator();
             while (satisfyCond(pcopyList) && pcopyList.size() != 0) {
+                Iterator<IrPcopyInstr> it = pcopyList.iterator();
                 while (satisfyCond(pcopyList) && it.hasNext()) {
                     IrPcopyInstr pcopy = it.next();
                     if (singleAssign(pcopy, pcopyList)) {
