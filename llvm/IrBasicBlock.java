@@ -124,6 +124,9 @@ public class IrBasicBlock extends IrValue {
             if (!(instr instanceof IrBrInstr)) {
                 instr.buildMips();
             }
+            else{
+                MipsBuilder.MIPSBUILDER.writeBackAll();
+            }
         }
     }
 }

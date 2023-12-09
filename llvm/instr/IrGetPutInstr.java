@@ -55,20 +55,27 @@ public class IrGetPutInstr extends IrInstr {
     @Override
     public void buildMips() {
         MipsBuilder.MIPSBUILDER.buildComment(this);
+        int reg;
         switch (getIrInstrType()) {
             case GETINT:
                 MipsBuilder.MIPSBUILDER.buildLi(1, 5);//v0
                 MipsBuilder.MIPSBUILDER.buildSyscall();
-                int offset = MipsBuilder.MIPSBUILDER.buildVarSymbol(this);
-                MipsBuilder.MIPSBUILDER.buildSw(1, 29, offset);
+                MipsBuilder.MIPSBUILDER.buildVarSymbol(this);
+                reg = MipsBuilder.MIPSBUILDER.allocReg(this);
+                MipsBuilder.MIPSBUILDER.buildMove(reg, 1);
                 break;
             case PUTINT:
                 if (getOperand() instanceof IrConstInt) {
                     MipsBuilder.MIPSBUILDER.buildLi(4, ((IrConstInt) getOperand()).getValue());
                 } else {
-                    //将值lw到a0中
-                    int operandOffset = MipsBuilder.MIPSBUILDER.getSymbolOffset(getOperand());
-                    MipsBuilder.MIPSBUILDER.buildLw(4, 29, operandOffset);
+                    if (MipsBuilder.MIPSBUILDER.hasAllocReg(getOperand())) {
+                        reg = MipsBuilder.MIPSBUILDER.getReg(getOperand());
+                        MipsBuilder.MIPSBUILDER.buildMove(4, reg);
+                    } else {
+                        //将值lw到a0中
+                        int operandOffset = MipsBuilder.MIPSBUILDER.getSymbolOffset(getOperand());
+                        MipsBuilder.MIPSBUILDER.buildLw(4, 29, operandOffset);
+                    }
                 }
                 MipsBuilder.MIPSBUILDER.buildLi(1, 1);//v0
                 MipsBuilder.MIPSBUILDER.buildSyscall();

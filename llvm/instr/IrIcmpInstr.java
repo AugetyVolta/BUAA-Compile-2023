@@ -37,42 +37,62 @@ public class IrIcmpInstr extends IrInstr {
     @Override
     public void buildMips() {
         MipsBuilder.MIPSBUILDER.buildComment(this);
+        //operand1
+        int reg1;
         if (getOperand1() instanceof IrConstInt) {
-            MipsBuilder.MIPSBUILDER.buildLi(8, ((IrConstInt) getOperand1()).getValue());
+            reg1 = 26;
+            MipsBuilder.MIPSBUILDER.buildLi(reg1, ((IrConstInt) getOperand1()).getValue());
         } else {
-            int offset1 = MipsBuilder.MIPSBUILDER.getSymbolOffset(getOperand1());
-            MipsBuilder.MIPSBUILDER.buildLw(8, 29, offset1);
+            if (MipsBuilder.MIPSBUILDER.hasAllocReg(getOperand1())) {
+                reg1 = MipsBuilder.MIPSBUILDER.getReg(getOperand1());
+            } else {
+                reg1 = MipsBuilder.MIPSBUILDER.allocReg(getOperand1());
+                int offset1 = MipsBuilder.MIPSBUILDER.getSymbolOffset(getOperand1());
+                MipsBuilder.MIPSBUILDER.buildLw(reg1, 29, offset1);
+            }
         }
         //operand2
+        int reg2;
         if (getOperand2() instanceof IrConstInt) {
-            MipsBuilder.MIPSBUILDER.buildLi(9, ((IrConstInt) getOperand2()).getValue());
+            reg2 = 27;
+            MipsBuilder.MIPSBUILDER.buildLi(reg2, ((IrConstInt) getOperand2()).getValue());
         } else {
-            int offset2 = MipsBuilder.MIPSBUILDER.getSymbolOffset(getOperand2());
-            MipsBuilder.MIPSBUILDER.buildLw(9, 29, offset2);
+            if (MipsBuilder.MIPSBUILDER.hasAllocReg(getOperand2())) {
+                reg2 = MipsBuilder.MIPSBUILDER.getReg(getOperand2());
+            } else {
+                reg2 = MipsBuilder.MIPSBUILDER.allocReg(getOperand2());
+                int offset2 = MipsBuilder.MIPSBUILDER.getSymbolOffset(getOperand2());
+                MipsBuilder.MIPSBUILDER.buildLw(reg2, 29, offset2);
+            }
+        }
+        int reg3;
+        if (MipsBuilder.MIPSBUILDER.hasAllocReg(this)) {
+            reg3 = MipsBuilder.MIPSBUILDER.getReg(this);
+        } else {
+            reg3 = MipsBuilder.MIPSBUILDER.allocReg(this);
         }
         //构建比较指令
         switch (getCond()) {
             case EQ:
-                MipsBuilder.MIPSBUILDER.buildSeq(10, 8, 9);
+                MipsBuilder.MIPSBUILDER.buildSeq(reg3, reg1, reg2);
                 break;
             case NE:
-                MipsBuilder.MIPSBUILDER.buildSne(10, 8, 9);
+                MipsBuilder.MIPSBUILDER.buildSne(reg3, reg1, reg2);
                 break;
             case SGE:
-                MipsBuilder.MIPSBUILDER.buildSge(10, 8, 9);
+                MipsBuilder.MIPSBUILDER.buildSge(reg3, reg1, reg2);
                 break;
             case SGT:
-                MipsBuilder.MIPSBUILDER.buildSgt(10, 8, 9);
+                MipsBuilder.MIPSBUILDER.buildSgt(reg3, reg1, reg2);
                 break;
             case SLE:
-                MipsBuilder.MIPSBUILDER.buildSle(10, 8, 9);
+                MipsBuilder.MIPSBUILDER.buildSle(reg3, reg1, reg2);
                 break;
             case SLT:
-                MipsBuilder.MIPSBUILDER.buildSlt(10, 8, 9);
+                MipsBuilder.MIPSBUILDER.buildSlt(reg3, reg1, reg2);
                 break;
         }
         //将指令的值存入内存
-        int resultOffset = MipsBuilder.MIPSBUILDER.buildVarSymbol(this);
-        MipsBuilder.MIPSBUILDER.buildSw(10, 29, resultOffset);
+        MipsBuilder.MIPSBUILDER.buildVarSymbol(this);
     }
 }

@@ -31,42 +31,61 @@ public class IrBinaryInstr extends IrInstr {
         MipsBuilder.MIPSBUILDER.buildComment(this);
         //两侧的东西一定都在内存中已经存了,因此直接获得的即可
         //operand1
+        int reg1;
         if (getOperand1() instanceof IrConstInt) {
-            MipsBuilder.MIPSBUILDER.buildLi(8, ((IrConstInt) getOperand1()).getValue());
+            reg1 = 26;
+            MipsBuilder.MIPSBUILDER.buildLi(reg1, ((IrConstInt) getOperand1()).getValue());
         } else {
-            int offset1 = MipsBuilder.MIPSBUILDER.getSymbolOffset(getOperand1());
-            MipsBuilder.MIPSBUILDER.buildLw(8, 29, offset1);
+            if (MipsBuilder.MIPSBUILDER.hasAllocReg(getOperand1())) {
+                reg1 = MipsBuilder.MIPSBUILDER.getReg(getOperand1());
+            } else {
+                reg1 = MipsBuilder.MIPSBUILDER.allocReg(getOperand1());
+                int offset1 = MipsBuilder.MIPSBUILDER.getSymbolOffset(getOperand1());
+                MipsBuilder.MIPSBUILDER.buildLw(reg1, 29, offset1);
+            }
         }
         //operand2
+        int reg2;
         if (getOperand2() instanceof IrConstInt) {
-            MipsBuilder.MIPSBUILDER.buildLi(9, ((IrConstInt) getOperand2()).getValue());
+            reg2 = 27;
+            MipsBuilder.MIPSBUILDER.buildLi(reg2, ((IrConstInt) getOperand2()).getValue());
         } else {
-            int offset2 = MipsBuilder.MIPSBUILDER.getSymbolOffset(getOperand2());
-            MipsBuilder.MIPSBUILDER.buildLw(9, 29, offset2);
+            if (MipsBuilder.MIPSBUILDER.hasAllocReg(getOperand2())) {
+                reg2 = MipsBuilder.MIPSBUILDER.getReg(getOperand2());
+            } else {
+                reg2 = MipsBuilder.MIPSBUILDER.allocReg(getOperand2());
+                int offset2 = MipsBuilder.MIPSBUILDER.getSymbolOffset(getOperand2());
+                MipsBuilder.MIPSBUILDER.buildLw(reg2, 29, offset2);
+            }
+        }
+        int reg3;
+        if (MipsBuilder.MIPSBUILDER.hasAllocReg(this)) {
+            reg3 = MipsBuilder.MIPSBUILDER.getReg(this);
+        } else {
+            reg3 = MipsBuilder.MIPSBUILDER.allocReg(this);
         }
         //开始构建指令
         switch (getIrInstrType()) {
             case ADD:
-                MipsBuilder.MIPSBUILDER.buildAddu(10, 8, 9);
+                MipsBuilder.MIPSBUILDER.buildAddu(reg3, reg1, reg2);
                 break;
             case SUB:
-                MipsBuilder.MIPSBUILDER.buildSubu(10, 8, 9);
+                MipsBuilder.MIPSBUILDER.buildSubu(reg3, reg1, reg2);
                 break;
             case MUL:
-                MipsBuilder.MIPSBUILDER.buildMult(8, 9);
-                MipsBuilder.MIPSBUILDER.buildMflo(10);
+                MipsBuilder.MIPSBUILDER.buildMult(reg1, reg2);
+                MipsBuilder.MIPSBUILDER.buildMflo(reg3);
                 break;
             case SDIV:
-                MipsBuilder.MIPSBUILDER.buildDiv(8, 9);
-                MipsBuilder.MIPSBUILDER.buildMflo(10);
+                MipsBuilder.MIPSBUILDER.buildDiv(reg1, reg2);
+                MipsBuilder.MIPSBUILDER.buildMflo(reg3);
                 break;
             case SREM:
-                MipsBuilder.MIPSBUILDER.buildDiv(8, 9);
-                MipsBuilder.MIPSBUILDER.buildMfhi(10);
+                MipsBuilder.MIPSBUILDER.buildDiv(reg1, reg2);
+                MipsBuilder.MIPSBUILDER.buildMfhi(reg3);
                 break;
         }
-        //将指令的值存入内存
-        int resultOffset = MipsBuilder.MIPSBUILDER.buildVarSymbol(this);
-        MipsBuilder.MIPSBUILDER.buildSw(10, 29, resultOffset);
+        //在内存中构建位置
+        MipsBuilder.MIPSBUILDER.buildVarSymbol(this);
     }
 }

@@ -27,5 +27,16 @@ public class IrZextInstr extends IrInstr {
         int srcValueOffset = MipsBuilder.MIPSBUILDER.getSymbolOffset(getSrcValue());
         //只是改变了类型,不用创建新变量,只需要把之前的地址存进去就行
         MipsBuilder.MIPSBUILDER.getMipsSymbolTable().put(this, srcValueOffset);
+        //构建寄存器
+        if (MipsBuilder.MIPSBUILDER.hasAllocReg(getSrcValue())) {
+            int reg1 = MipsBuilder.MIPSBUILDER.allocReg(this);
+            int reg2 = MipsBuilder.MIPSBUILDER.getReg(getSrcValue());
+            MipsBuilder.MIPSBUILDER.buildMove(reg1, reg2);
+        }
+        else{
+            int reg1 = MipsBuilder.MIPSBUILDER.allocReg(this);
+            int reg2 = MipsBuilder.MIPSBUILDER.allocReg(getSrcValue());
+            MipsBuilder.MIPSBUILDER.buildMove(reg1, reg2);
+        }
     }
 }

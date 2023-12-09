@@ -58,30 +58,37 @@ public class IrGepInstr extends IrInstr {
         //取出目标所在的地址
         if (getPointer() instanceof IrGlobalVariable) {//如果是全局变量
             //基地址
-            MipsBuilder.MIPSBUILDER.buildLa(8, getPointer().getName().substring(1));
+            MipsBuilder.MIPSBUILDER.buildLa(26, getPointer().getName().substring(1));
         } else {//局部数组
             int offset = MipsBuilder.MIPSBUILDER.getSymbolOffset(getPointer());
             //基地址
-            MipsBuilder.MIPSBUILDER.buildLw(8, 29, offset);
+            MipsBuilder.MIPSBUILDER.buildLw(26, 29, offset);
             //为了统一局部变量和函数传参,统一对于数组,都存的是数组的基地址,之后再load两次
         }
         //偏移量
         IrValue offset = getOffset();
         if (offset instanceof IrConstInt) {
-            MipsBuilder.MIPSBUILDER.buildLi(9, ((IrConstInt) offset).getValue());
+            MipsBuilder.MIPSBUILDER.buildLi(27, ((IrConstInt) offset).getValue());
         } else if (offset instanceof IrGlobalVariable) { //由于全局变量使用前一定会被load,所以这条语句不会被执行
             //获得了全局变量的地址
-            MipsBuilder.MIPSBUILDER.buildLa(9, offset.getName().substring(1));
+            MipsBuilder.MIPSBUILDER.buildLa(27, offset.getName().substring(1));
             //从地址中读取值
-            MipsBuilder.MIPSBUILDER.buildLw(9, 9, 0);
+            MipsBuilder.MIPSBUILDER.buildLw(27, 27, 0);
         } else { //一定是被load出来的
-            MipsBuilder.MIPSBUILDER.buildLw(9, 29, MipsBuilder.MIPSBUILDER.getSymbolOffset(offset));
+            if (MipsBuilder.MIPSBUILDER.hasAllocReg(offset)) {
+                MipsBuilder.MIPSBUILDER.buildMove(27, MipsBuilder.MIPSBUILDER.getReg(offset));
+            } else {
+                MipsBuilder.MIPSBUILDER.buildLw(27, 29, MipsBuilder.MIPSBUILDER.getSymbolOffset(offset));
+            }
         }
+        MipsBuilder.MIPSBUILDER.buildVarSymbol(this);
+        int reg  = MipsBuilder.MIPSBUILDER.allocReg(this);
         //偏移量+基地址
-        MipsBuilder.MIPSBUILDER.buildSll(9, 9, 2);//要乘4
-        MipsBuilder.MIPSBUILDER.buildAddu(8, 8, 9);
+        MipsBuilder.MIPSBUILDER.buildSll(27, 27, 2);//要乘4
+        MipsBuilder.MIPSBUILDER.buildAddu(reg, 26, 27);
         //构建变量并存储数组初地址
-        MipsBuilder.MIPSBUILDER.buildSw(8, 29, MipsBuilder.MIPSBUILDER.buildVarSymbol(this));
+
+//        MipsBuilder.MIPSBUILDER.buildSw(26, 29, MipsBuilder.MIPSBUILDER.buildVarSymbol(this));
     }
 
 

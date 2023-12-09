@@ -11,10 +11,12 @@ import mips.instr.other.MipsLabel;
 import mips.instr.other.MipsSyscall;
 import mips.instr.r.*;
 
+import javax.swing.text.Style;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Stack;
 
-public class MipsBuilder {
+public class MipsBuilder extends MipsValue {
     public static MipsBuilder MIPSBUILDER = new MipsBuilder();
     private final MipsModule mipsModule;//全局只有一个mipsModule
 
@@ -27,6 +29,9 @@ public class MipsBuilder {
     }
 
     private HashMap<IrValue, Integer> mipsSymbolTable = new HashMap<>();//一个函数中IrValue的相对于栈指针的偏移
+    private HashMap<IrValue, Integer> varToReg = new HashMap<>();//irValue和寄存器的对应
+    private HashMap<Integer, IrValue> regToVar = new HashMap<>();//寄存器对应irValue
+    private ArrayList<Integer> usedQueue = new ArrayList<>();
     private int curOffset = 0;//一个函数中的动态栈顶
 
     //构建整数data
@@ -258,6 +263,57 @@ public class MipsBuilder {
     //是否存在符号
     public boolean hasSymbol(IrValue symbol) {
         return mipsSymbolTable.containsKey(symbol);
+    }
+
+    //是否对变量分配寄存器
+    public boolean hasAllocReg(IrValue symbol) {
+        return varToReg.containsKey(symbol);
+    }
+
+    public int getReg(IrValue symbol) {
+        int reg = varToReg.get(symbol);
+        //将最新使用的加在队头
+        usedQueue.remove((Integer) reg);
+        usedQueue.add(0, (Integer) reg);
+        return reg;
+    }
+
+    public int allocReg(IrValue symbol) {
+        for (int i = 8; i <= 25; i++) {
+            if (!regToVar.containsKey(i)) {
+                varToReg.put(symbol, i);
+                regToVar.put(i, symbol);
+                usedQueue.add(0, i);//将这次被使用的插入队列头
+                return i;
+            }
+        }
+        //如果没有空闲寄存器,取出队尾的拿去分配
+        int reg = usedQueue.get(usedQueue.size() - 1);
+        usedQueue.remove((Integer) reg);
+        usedQueue.add(0, reg);
+        //删除reg原来的对应的变量关系
+        IrValue value = regToVar.get(reg);
+        regToVar.remove((Integer) reg);
+        varToReg.remove(value);
+        //将reg中的值存回原来的变量中
+        buildSw(reg, 29, getSymbolOffset(value));
+        //设置新变量关系
+        varToReg.put(symbol, reg);
+        regToVar.put(reg, symbol);
+        return reg;
+    }
+
+    //所有寄存器值写回
+    public void writeBackAll() {
+        for (int i = 8; i <= 25; i++) {
+            if (regToVar.containsKey(i)) {
+                IrValue symbol = regToVar.get(i);
+                buildSw(i, 29, getSymbolOffset(symbol));
+            }
+        }
+        regToVar.clear();
+        varToReg.clear();
+        usedQueue.clear();
     }
 
     //得到符号表

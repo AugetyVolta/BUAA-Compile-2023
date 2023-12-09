@@ -27,27 +27,38 @@ public class IrLoadInstr extends IrInstr {
     public void buildMips() {
         MipsBuilder.MIPSBUILDER.buildComment(this);
         int srcOffset;
+        int reg;
+        if (MipsBuilder.MIPSBUILDER.hasAllocReg(this)) {
+            reg = MipsBuilder.MIPSBUILDER.getReg(this);
+        } else {
+            reg = MipsBuilder.MIPSBUILDER.allocReg(this);
+        }
         //如果从全局变量中load,其实还是0维的,因为1维2维被使用之前都会有GEP指令
         if (getPointer() instanceof IrGlobalVariable) {
             //获取全局变量的地址
-            MipsBuilder.MIPSBUILDER.buildLa(8, getPointer().getName().substring(1));
+            MipsBuilder.MIPSBUILDER.buildLa(reg, getPointer().getName().substring(1));
             //获取全局变量地址中的值
-            MipsBuilder.MIPSBUILDER.buildLw(8, 8, 0);
+            MipsBuilder.MIPSBUILDER.buildLw(reg, reg, 0);
         } else if (getPointer() instanceof IrGepInstr) {
-            //取出所存的地址
-            srcOffset = MipsBuilder.MIPSBUILDER.getSymbolOffset(getPointer());
-            MipsBuilder.MIPSBUILDER.buildLw(8, 29, srcOffset);
-            //取出地址中存的值
-            MipsBuilder.MIPSBUILDER.buildLw(8, 8, 0);
+            if(MipsBuilder.MIPSBUILDER.hasAllocReg(getPointer())){
+                MipsBuilder.MIPSBUILDER.buildLw(reg, MipsBuilder.MIPSBUILDER.getReg(getPointer()), 0);
+            }
+            else{
+                //取出所存的地址
+                srcOffset = MipsBuilder.MIPSBUILDER.getSymbolOffset(getPointer());
+                MipsBuilder.MIPSBUILDER.buildLw(reg, 29, srcOffset);
+                //取出地址中存的值
+                MipsBuilder.MIPSBUILDER.buildLw(reg, reg, 0);
+            }
         } else {
             //src相对于sp的offset
             srcOffset = MipsBuilder.MIPSBUILDER.getSymbolOffset(getPointer());
             //取出src里面的值
-            MipsBuilder.MIPSBUILDER.buildLw(8, 29, srcOffset);
+            MipsBuilder.MIPSBUILDER.buildLw(reg, 29, srcOffset);
         }
         //构建新的变量
-        int dstOffset = MipsBuilder.MIPSBUILDER.buildVarSymbol(this);
+        MipsBuilder.MIPSBUILDER.buildVarSymbol(this);
         //将src中取出的值存进当前的地址
-        MipsBuilder.MIPSBUILDER.buildSw(8, 29, dstOffset);
+
     }
 }

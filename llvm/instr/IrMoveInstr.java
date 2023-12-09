@@ -22,22 +22,29 @@ public class IrMoveInstr extends IrInstr {
     public void buildMips() {
         MipsBuilder.MIPSBUILDER.buildComment(this);
         //看看move的对象是否有定义
-        int dstIndex;
+        int reg1;
         if (MipsBuilder.MIPSBUILDER.hasSymbol(getOperand(0))) {
-            dstIndex = MipsBuilder.MIPSBUILDER.getSymbolOffset(getOperand(0));
+            if (MipsBuilder.MIPSBUILDER.hasAllocReg(getOperand(0))) {
+                reg1 = MipsBuilder.MIPSBUILDER.getReg(getOperand(0));
+            } else {
+                reg1 = MipsBuilder.MIPSBUILDER.allocReg(getOperand(0));
+            }
         } else {
-            dstIndex = MipsBuilder.MIPSBUILDER.buildVarSymbol(getOperand(0));
+            MipsBuilder.MIPSBUILDER.buildVarSymbol(getOperand(0));
+            reg1 = MipsBuilder.MIPSBUILDER.allocReg(getOperand(0));
         }
+        int reg2;
         if (getOperand(1) instanceof IrConstInt) {
-            MipsBuilder.MIPSBUILDER.buildLi(8, ((IrConstInt) getOperand(1)).getValue());
-            //构建store进dst
-            MipsBuilder.MIPSBUILDER.buildSw(8, 29, dstIndex);
+            MipsBuilder.MIPSBUILDER.buildLi(reg1, ((IrConstInt) getOperand(1)).getValue());
         } else {
-            int srcIndex = MipsBuilder.MIPSBUILDER.getSymbolOffset(getOperand(1));
-            //构建一个load取出src中的值
-            MipsBuilder.MIPSBUILDER.buildLw(8, 29, srcIndex);
-            //构建store进dst
-            MipsBuilder.MIPSBUILDER.buildSw(8, 29, dstIndex);
+            if (MipsBuilder.MIPSBUILDER.hasAllocReg(getOperand(1))) {
+                reg2 = MipsBuilder.MIPSBUILDER.getReg(getOperand(1));
+            } else {
+                reg2 = MipsBuilder.MIPSBUILDER.allocReg(getOperand(1));
+                int offset = MipsBuilder.MIPSBUILDER.getSymbolOffset(getOperand(1));
+                MipsBuilder.MIPSBUILDER.buildLw(reg2,29,offset);
+            }
+            MipsBuilder.MIPSBUILDER.buildMove(reg1, reg2);
         }
     }
 }
