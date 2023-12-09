@@ -3,8 +3,10 @@ package optimizer;
 import llvm.*;
 import llvm.instr.*;
 import llvm.type.IrIntegetType;
+
 import java.util.ArrayList;
 import java.util.Iterator;
+
 import static utils.MyConfig.mipsOutputPath;
 import static utils.MyIO.writeFile;
 
@@ -89,29 +91,31 @@ public class RemovePhi {
             ArrayList<IrMoveInstr> moveList = new ArrayList<>();
             ArrayList<IrPcopyInstr> pcopyList = basicBlock.getPCList();
             Iterator<IrPcopyInstr> it = pcopyList.iterator();
-            while (satisfyCond(pcopyList) && it.hasNext()) {
-                IrPcopyInstr pcopy = it.next();
-                if (singleAssign(pcopy, pcopyList)) {
-                    //append b<-a to seq
-                    String formatName = IrBuilder.IRBUILDER.generateVarName(function);
-                    IrMoveInstr moveInstr = new IrMoveInstr(formatName, pcopy.getOperand(0), pcopy.getOperand(1));
-                    moveInstr.setBasicBlock(basicBlock);
-                    moveList.add(moveInstr);
-                    //删除
-                    it.remove();
-                    basicBlock.getInstrs().remove(pcopy);
-                } else {
-                    if (pcopy.getOperand(0).equals(pcopy.getOperand(1))) {
-                        continue;
+            while (satisfyCond(pcopyList) && pcopyList.size() != 0) {
+                while (satisfyCond(pcopyList) && it.hasNext()) {
+                    IrPcopyInstr pcopy = it.next();
+                    if (singleAssign(pcopy, pcopyList)) {
+                        //append b<-a to seq
+                        String formatName = IrBuilder.IRBUILDER.generateVarName(function);
+                        IrMoveInstr moveInstr = new IrMoveInstr(formatName, pcopy.getOperand(0), pcopy.getOperand(1));
+                        moveInstr.setBasicBlock(basicBlock);
+                        moveList.add(moveInstr);
+                        //删除
+                        it.remove();
+                        basicBlock.getInstrs().remove(pcopy);
+                    } else {
+                        if (pcopy.getOperand(0).equals(pcopy.getOperand(1))) {
+                            continue;
+                        }
+                        //创建一个新变量
+                        String formatName = IrBuilder.IRBUILDER.generateVarName(function);
+                        IrValue value = new IrValue(formatName, IrIntegetType.INT32);
+                        //a'<-a加入
+                        IrMoveInstr moveInstr = new IrMoveInstr(IrBuilder.IRBUILDER.generateVarName(function), value, pcopy.getOperand(1));
+                        moveInstr.setBasicBlock(basicBlock);
+                        moveList.add(moveInstr);
+                        pcopy.modifyOperand(value, 1);
                     }
-                    //创建一个新变量
-                    String formatName = IrBuilder.IRBUILDER.generateVarName(function);
-                    IrValue value = new IrValue(formatName, IrIntegetType.INT32);
-                    //a'<-a加入
-                    IrMoveInstr moveInstr = new IrMoveInstr(IrBuilder.IRBUILDER.generateVarName(function), value, pcopy.getOperand(1));
-                    moveInstr.setBasicBlock(basicBlock);
-                    moveList.add(moveInstr);
-                    pcopy.modifyOperand(value, 1);
                 }
             }
             //加入basicBlock中
