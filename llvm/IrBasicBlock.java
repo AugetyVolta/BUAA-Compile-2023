@@ -14,10 +14,7 @@ public class IrBasicBlock extends IrValue {
     private boolean canAdd;//是否可以继续加指令,因为之前已经有ret或者br指令了
     private ArrayList<IrBasicBlock> prev = new ArrayList<>();//前驱节点
     private ArrayList<IrBasicBlock> next = new ArrayList<>();//后继节点
-    private ArrayList<IrValue> in = new ArrayList<>(); //in
-    private ArrayList<IrValue> out = new ArrayList<>();//out
-    private ArrayList<IrValue> def = new ArrayList<>(); //def
-    private ArrayList<IrValue> use = new ArrayList<>();//use
+    private ArrayList<IrBasicBlock> idoms = new ArrayList<>();
     private ArrayList<IrPcopyInstr> PCList = new ArrayList<>();
 
     public IrBasicBlock(String name, IrFunction function) {
@@ -96,6 +93,14 @@ public class IrBasicBlock extends IrValue {
 
     public ArrayList<IrBasicBlock> getNext() {
         return next;
+    }
+
+    public void setIdoms(ArrayList<IrBasicBlock> idoms) {
+        this.idoms = idoms;
+    }
+
+    public ArrayList<IrBasicBlock> getIdoms() {
+        return idoms;
     }
 
     @Override

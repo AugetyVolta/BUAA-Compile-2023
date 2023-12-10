@@ -17,14 +17,16 @@ public class Optimizer {
         }
         new ConstSpread(module);
         new DeadCodeElimination(module);
+        new GVN(module);
+        new DeadCodeElimination(module);
         if (OpenMem2Reg) {
             new RemovePhi(module);
         }
         writeFile("llvm_move.txt", module.toString());
         new MergeBlock(module);
         new DeadCodeElimination(module);
+        new GVN(module);
         writeFile("llvm_merge.txt", module.toString());
     }
-
 
 }

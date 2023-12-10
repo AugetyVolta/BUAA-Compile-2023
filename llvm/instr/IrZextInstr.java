@@ -28,4 +28,8 @@ public class IrZextInstr extends IrInstr {
         //只是改变了类型,不用创建新变量,只需要把之前的地址存进去就行
         MipsBuilder.MIPSBUILDER.getMipsSymbolTable().put(this, srcValueOffset);
     }
+
+    public String hash() {
+        return this.toString().substring(0, this.toString().indexOf('='));
+    }
 }

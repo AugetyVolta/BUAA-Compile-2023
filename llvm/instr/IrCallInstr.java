@@ -92,4 +92,11 @@ public class IrCallInstr extends IrInstr {
             MipsBuilder.MIPSBUILDER.buildSw(1, 29, offset);
         }
     }
+
+    public String hash() {
+        if (getType() != IrIntegetType.VOID) {
+            return this.toString().substring(0, this.toString().indexOf('='));
+        }
+        return null;
+    }
 }

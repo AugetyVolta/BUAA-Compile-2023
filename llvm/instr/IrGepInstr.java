@@ -85,4 +85,9 @@ public class IrGepInstr extends IrInstr {
     }
 
 
+    public String hash() {
+        return this.toString().substring(0, this.toString().indexOf('='));
+    }
+
+
 }

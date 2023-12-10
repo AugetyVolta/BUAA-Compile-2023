@@ -75,4 +75,10 @@ public class IrIcmpInstr extends IrInstr {
         int resultOffset = MipsBuilder.MIPSBUILDER.buildVarSymbol(this);
         MipsBuilder.MIPSBUILDER.buildSw(10, 29, resultOffset);
     }
+
+
+    public String hash() {
+        return this.toString().substring(0, this.toString().indexOf('='));
+    }
+
 }

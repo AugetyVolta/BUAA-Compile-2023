@@ -241,4 +241,24 @@ public class IrBinaryInstr extends IrInstr {
         returns.add(l);
         return returns;
     }
+
+    public String hash() {
+        if (getIrInstrType() == IrInstrType.ADD || getIrInstrType() == IrInstrType.MUL) {
+            StringBuilder sb = new StringBuilder();
+            sb.append(getIrInstrType().toString().toLowerCase());
+            sb.append(getType());
+            String name1 = getOperand1().getName();
+            String name2 = getOperand2().getName();
+            if (name1.compareTo(name2) < 0) {
+                sb.append(name1);
+                sb.append(name2);
+            } else {
+                sb.append(name2);
+                sb.append(name1);
+            }
+            return sb.toString();
+        } else {
+            return this.toString().substring(0, this.toString().indexOf('='));
+        }
+    }
 }

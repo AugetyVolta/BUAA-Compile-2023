@@ -223,6 +223,7 @@ public class Mem2Reg {
                             ArrayList<IrBasicBlock> iDomBlocks = iDoms.getOrDefault(block, new ArrayList<>());
                             iDomBlocks.add(basicBlock);
                             iDoms.put(block, iDomBlocks);
+                            block.setIdoms(iDomBlocks);
                             break;
                         }
                     }
