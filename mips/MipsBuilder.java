@@ -239,8 +239,8 @@ public class MipsBuilder extends MipsValue {
     public void buildArraySymbol(IrValue symbol, int arrayLength) {
         moveCurOffset(arrayLength * 4);
         //数组的基地址在curOffset + 4,将数组的基地址存在数组空间的下一个字节,即curOffset
-        buildAddi(8, 29, curOffset + 4);
-        buildSw(8, 29, curOffset);
+        buildAddi(26, 29, curOffset + 4);
+        buildSw(26, 29, curOffset);
         this.mipsSymbolTable.put(symbol, curOffset);
         //还需移到下一个未被分配的空间,否则会被新分配的变量覆盖内容
         moveCurOffset(4);
