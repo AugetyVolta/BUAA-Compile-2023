@@ -39,4 +39,8 @@ public class IrZextInstr extends IrInstr {
             MipsBuilder.MIPSBUILDER.buildMove(reg1, reg2);
         }
     }
+
+    public String hash() {
+        return this.toString().substring(0, this.toString().indexOf('='));
+    }
 }

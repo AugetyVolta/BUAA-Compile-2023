@@ -95,4 +95,8 @@ public class IrIcmpInstr extends IrInstr {
         //将指令的值存入内存
         MipsBuilder.MIPSBUILDER.buildVarSymbol(this);
     }
+
+    public String hash() {
+        return this.toString().substring(0, this.toString().indexOf('='));
+    }
 }

@@ -112,4 +112,11 @@ public class IrCallInstr extends IrInstr {
         }
     }
 
+    public String hash() {
+        if (getType() != IrIntegetType.VOID) {
+            return this.toString().substring(0, this.toString().indexOf('='));
+        }
+        return null;
+    }
+
 }

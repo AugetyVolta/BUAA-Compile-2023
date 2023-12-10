@@ -17,6 +17,7 @@ public class Optimizer {
         }
         new ConstSpread(module);
         new DeadCodeElimination(module);
+        new GVN(module);
         if (OpenMem2Reg) {
             new RemovePhi(module);
         }

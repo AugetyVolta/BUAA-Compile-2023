@@ -36,4 +36,9 @@ public class IrInstr extends IrUser {
     public String toString() {
         return "";
     }
+
+
+    public String hash() {
+        return null;
+    }
 }

@@ -18,6 +18,7 @@ public class IrBasicBlock extends IrValue {
     private ArrayList<IrValue> out = new ArrayList<>();//out
     private ArrayList<IrValue> def = new ArrayList<>(); //def
     private ArrayList<IrValue> use = new ArrayList<>();//use
+    private ArrayList<IrBasicBlock> idoms = new ArrayList<>();
     private ArrayList<IrPcopyInstr> PCList = new ArrayList<>();
 
     public IrBasicBlock(String name, IrFunction function) {
@@ -74,6 +75,14 @@ public class IrBasicBlock extends IrValue {
         return instrs.get(size - 1);
     }
 
+    public void setIdoms(ArrayList<IrBasicBlock> idoms) {
+        this.idoms = idoms;
+    }
+
+    public ArrayList<IrBasicBlock> getIdoms() {
+        return idoms;
+    }
+
     public IrFunction getFunction() {
         return function;
     }
@@ -123,8 +132,7 @@ public class IrBasicBlock extends IrValue {
         for (IrInstr instr : instrs) {
             if (!(instr instanceof IrBrInstr)) {
                 instr.buildMips();
-            }
-            else{
+            } else {
                 MipsBuilder.MIPSBUILDER.writeBackAll();
             }
         }

@@ -91,5 +91,9 @@ public class IrGepInstr extends IrInstr {
 //        MipsBuilder.MIPSBUILDER.buildSw(26, 29, MipsBuilder.MIPSBUILDER.buildVarSymbol(this));
     }
 
+    public String hash() {
+        return this.toString().substring(0, this.toString().indexOf('='));
+    }
+
 
 }
