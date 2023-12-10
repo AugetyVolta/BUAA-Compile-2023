@@ -66,6 +66,11 @@ public class MipsBuilder {
         mipsModule.addTextData(addu);
     }
 
+    public void buildAdd(int rd, int rs, int rt) {
+        MipsAdd add = new MipsAdd(rd, rs, rt);
+        mipsModule.addTextData(add);
+    }
+
     //构建subu
     public void buildSubu(int rd, int rs, int rt) {
         MipsSubu subu = new MipsSubu(rd, rs, rt);
@@ -197,6 +202,23 @@ public class MipsBuilder {
     public void buildSll(int rd, int rt, int s) {
         MipsSll sll = new MipsSll(rd, rt, s);
         mipsModule.addTextData(sll);
+    }
+
+    //构建sra
+    public void buildSra(int rd, int rt, int s) {
+        MipsSra sra = new MipsSra(rd, rt, s);
+        mipsModule.addTextData(sra);
+    }
+
+    //构建srl
+    public void buildSrl(int rd, int rt, int s) {
+        MipsSrl srl = new MipsSrl(rd, rt, s);
+        mipsModule.addTextData(srl);
+    }
+
+    public void buildSlti(int rt, int rs, int s) {
+        MipsSlti slti = new MipsSlti(rt, rs, s);
+        mipsModule.addTextData(slti);
     }
 
     //构建JInstr
