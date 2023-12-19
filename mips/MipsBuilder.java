@@ -294,10 +294,8 @@ public class MipsBuilder extends MipsValue {
     public int getReg(IrValue symbol) {
         int reg = varToReg.get(symbol);
         //将最新使用的加在队头
-        if (reg >= 15) {
-            usedQueue.remove((Integer) reg);
-            usedQueue.add(0, (Integer) reg);
-        }
+        usedQueue.remove((Integer) reg);
+        usedQueue.add(0, (Integer) reg);
         return reg;
     }
 
