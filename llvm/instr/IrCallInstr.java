@@ -62,8 +62,6 @@ public class IrCallInstr extends IrInstr {
         MipsBuilder.MIPSBUILDER.buildSw(31, 29, curOffset);
         curOffset = MipsBuilder.MIPSBUILDER.moveCurOffset(4);
         int spRecord = curOffset;
-        //保存a1-a3寄存器
-        //MipsBuilder.MIPSBUILDER.saveAReg();
         //传入参数
         int aReg = 5;
         for (int i = 1; i <= argumentSize; i++) {
@@ -132,7 +130,6 @@ public class IrCallInstr extends IrInstr {
         //恢复ra和sp
         MipsBuilder.MIPSBUILDER.buildLw(31, 29, 4);
         MipsBuilder.MIPSBUILDER.buildLw(29, 29, 8);
-        //MipsBuilder.MIPSBUILDER.popAReg();
         //如果函数有返回值,需要构建一个变量
         if (getFunction().getReturnType() != IrIntegetType.VOID) {
             MipsBuilder.MIPSBUILDER.buildVarSymbol(this);
