@@ -69,8 +69,13 @@ public class IrFunction extends IrUser {
         //进入函数
         MipsBuilder.MIPSBUILDER.enterFunction();
         //填入参数
+        int aReg = 5;
         for (IrValue param : params) {
             MipsBuilder.MIPSBUILDER.buildVarSymbol(param);
+//            if (aReg <= 7) {
+//                MipsBuilder.MIPSBUILDER.setReg(param,aReg);
+//                aReg++;
+//            }
         }
         //相邻块跳转优化
         for (int i = 0; i < basicBlocks.size(); i++) {
@@ -86,5 +91,7 @@ public class IrFunction extends IrUser {
                 basicBlock.buildMips();
             }
         }
+//        //清空当前函数的寄存器情况
+//        MipsBuilder.MIPSBUILDER.clearAll();
     }
 }

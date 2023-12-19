@@ -32,11 +32,9 @@ public class IrZextInstr extends IrInstr {
             int reg1 = MipsBuilder.MIPSBUILDER.allocReg(this);
             int reg2 = MipsBuilder.MIPSBUILDER.getReg(getSrcValue());
             MipsBuilder.MIPSBUILDER.buildMove(reg1, reg2);
-        }
-        else{
+        } else {
             int reg1 = MipsBuilder.MIPSBUILDER.allocReg(this);
-            int reg2 = MipsBuilder.MIPSBUILDER.allocReg(getSrcValue());
-            MipsBuilder.MIPSBUILDER.buildMove(reg1, reg2);
+            MipsBuilder.MIPSBUILDER.buildLw(reg1, 29, MipsBuilder.MIPSBUILDER.getSymbolOffset(getSrcValue()));
         }
     }
 

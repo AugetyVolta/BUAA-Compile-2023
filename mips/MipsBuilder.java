@@ -71,6 +71,11 @@ public class MipsBuilder extends MipsValue {
         mipsModule.addTextData(addu);
     }
 
+    public void buildAdd(int rd, int rs, int rt) {
+        MipsAdd add = new MipsAdd(rd, rs, rt);
+        mipsModule.addTextData(add);
+    }
+
     //构建subu
     public void buildSubu(int rd, int rs, int rt) {
         MipsSubu subu = new MipsSubu(rd, rs, rt);
@@ -204,6 +209,22 @@ public class MipsBuilder extends MipsValue {
         mipsModule.addTextData(sll);
     }
 
+    public void buildSra(int rd, int rt, int s) {
+        MipsSra sra = new MipsSra(rd, rt, s);
+        mipsModule.addTextData(sra);
+    }
+
+    //构建srl
+    public void buildSrl(int rd, int rt, int s) {
+        MipsSrl srl = new MipsSrl(rd, rt, s);
+        mipsModule.addTextData(srl);
+    }
+
+    public void buildSlti(int rt, int rs, int s) {
+        MipsSlti slti = new MipsSlti(rt, rs, s);
+        mipsModule.addTextData(slti);
+    }
+
     //构建JInstr
     //构建j
     public void buildJ(String labelName) {
@@ -273,8 +294,10 @@ public class MipsBuilder extends MipsValue {
     public int getReg(IrValue symbol) {
         int reg = varToReg.get(symbol);
         //将最新使用的加在队头
-        usedQueue.remove((Integer) reg);
-        usedQueue.add(0, (Integer) reg);
+        if (reg >= 8) {
+            usedQueue.remove((Integer) reg);
+            usedQueue.add(0, (Integer) reg);
+        }
         return reg;
     }
 
@@ -303,6 +326,11 @@ public class MipsBuilder extends MipsValue {
         return reg;
     }
 
+    public void setReg(IrValue value, int reg) {
+        varToReg.put(value, reg);
+        regToVar.put(reg, value);
+    }
+
     //所有寄存器值写回
     public void writeBackAll() {
         for (int i = 8; i <= 25; i++) {
@@ -311,9 +339,49 @@ public class MipsBuilder extends MipsValue {
                 buildSw(i, 29, getSymbolOffset(symbol));
             }
         }
+//        ArrayList<Integer> regs = new ArrayList<>();
+//        ArrayList<IrValue> values = new ArrayList<>();
+//        for (int i = 5; i <= 7; i++) {
+//            if (regToVar.containsKey(i)) {
+//                regs.add(i);
+//                values.add(regToVar.get(i));
+//            }
+//        }
         regToVar.clear();
         varToReg.clear();
         usedQueue.clear();
+//        for (int i = 0; i < regs.size(); i++) {
+//            int reg = regs.get(i);
+//            IrValue value = values.get(i);
+//            regToVar.put(reg, value);
+//            varToReg.put(value, reg);
+//        }
+    }
+
+    public void clearAll() {
+        regToVar.clear();
+        varToReg.clear();
+        usedQueue.clear();
+    }
+
+    public void saveAReg() {
+        int offset = 0;
+        for (int i = 5; i <= 7; i++) {
+            if (regToVar.containsKey(i)) {
+                buildSw(i, 29, offset);
+            }
+            offset -= 4;
+        }
+    }
+
+    public void popAReg() {
+        int offset = 0;
+        for (int i = 5; i <= 7; i++) {
+            if (regToVar.containsKey(i)) {
+                buildLw(i, 29, offset);
+            }
+            offset -= 4;
+        }
     }
 
     //得到符号表

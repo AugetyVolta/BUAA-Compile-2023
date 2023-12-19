@@ -92,7 +92,6 @@ public class IrIcmpInstr extends IrInstr {
                 MipsBuilder.MIPSBUILDER.buildSlt(reg3, reg1, reg2);
                 break;
         }
-        //将指令的值存入内存
         MipsBuilder.MIPSBUILDER.buildVarSymbol(this);
     }
 

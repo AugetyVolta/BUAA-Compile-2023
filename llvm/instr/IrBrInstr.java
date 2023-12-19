@@ -56,9 +56,9 @@ public class IrBrInstr extends IrInstr {
     @Override
     public void buildMips() {
         MipsBuilder.MIPSBUILDER.buildComment(this);
-        MipsBuilder.MIPSBUILDER.writeBackAll();
         if (isCond) {
             if (!MipsBuilder.MIPSBUILDER.hasAllocReg(getCond())) {
+                MipsBuilder.MIPSBUILDER.writeBackAll();
                 int condOffset = MipsBuilder.MIPSBUILDER.getSymbolOffset(getCond());
                 MipsBuilder.MIPSBUILDER.buildLw(26, 29, condOffset);
                 //true
@@ -66,11 +66,13 @@ public class IrBrInstr extends IrInstr {
             } else {
                 int reg = MipsBuilder.MIPSBUILDER.getReg(getCond());
                 //true
+                MipsBuilder.MIPSBUILDER.writeBackAll();
                 MipsBuilder.MIPSBUILDER.buildBne(reg, 0, getLabel(1).getName());
             }
             //false
             MipsBuilder.MIPSBUILDER.buildJ(getLabel(2).getName());
         } else {
+            MipsBuilder.MIPSBUILDER.writeBackAll();
             MipsBuilder.MIPSBUILDER.buildJ(getLabel(0).getName());
         }
     }

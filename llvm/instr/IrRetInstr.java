@@ -31,13 +31,14 @@ public class IrRetInstr extends IrInstr {
     @Override
     public void buildMips() {
         MipsBuilder.MIPSBUILDER.buildComment(this);
-        MipsBuilder.MIPSBUILDER.writeBackAll();
         IrValue retValue = getRetValue();
         if (retValue == null) {
+            MipsBuilder.MIPSBUILDER.writeBackAll();
             MipsBuilder.MIPSBUILDER.buildJr(31);
         } else {
             if (retValue instanceof IrConstInt) {
                 MipsBuilder.MIPSBUILDER.buildLi(1, ((IrConstInt) retValue).getValue());
+                MipsBuilder.MIPSBUILDER.writeBackAll();
                 MipsBuilder.MIPSBUILDER.buildJr(31);
             } else {
                 if (!MipsBuilder.MIPSBUILDER.hasAllocReg(getRetValue())) {
@@ -47,6 +48,7 @@ public class IrRetInstr extends IrInstr {
                     int reg = MipsBuilder.MIPSBUILDER.getReg(getRetValue());
                     MipsBuilder.MIPSBUILDER.buildMove(1, reg);
                 }
+                MipsBuilder.MIPSBUILDER.writeBackAll();
                 MipsBuilder.MIPSBUILDER.buildJr(31);
             }
         }

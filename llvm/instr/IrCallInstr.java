@@ -55,8 +55,6 @@ public class IrCallInstr extends IrInstr {
     @Override
     public void buildMips() {
         MipsBuilder.MIPSBUILDER.buildComment(this);
-        //将所有的寄存器写回地址
-        MipsBuilder.MIPSBUILDER.writeBackAll();
         //保存sp和ra
         int curOffset = MipsBuilder.MIPSBUILDER.getCurOffset();
         MipsBuilder.MIPSBUILDER.buildSw(29, 29, curOffset);
@@ -64,38 +62,69 @@ public class IrCallInstr extends IrInstr {
         MipsBuilder.MIPSBUILDER.buildSw(31, 29, curOffset);
         curOffset = MipsBuilder.MIPSBUILDER.moveCurOffset(4);
         int spRecord = curOffset;
+        //保存a1-a3寄存器
+        //MipsBuilder.MIPSBUILDER.saveAReg();
         //传入参数
+        int aReg = 5;
         for (int i = 1; i <= argumentSize; i++) {
             IrValue argument = getArgument(i);
             int reg;
-            if (MipsBuilder.MIPSBUILDER.hasAllocReg(argument)) {
-                reg = MipsBuilder.MIPSBUILDER.getReg(argument);
-                if (argument instanceof IrConstInt) {
-                    MipsBuilder.MIPSBUILDER.buildLi(26, ((IrConstInt) argument).getValue());
-                    MipsBuilder.MIPSBUILDER.buildSw(26, 29, curOffset);
-                } else if (argument instanceof IrGlobalVariable) {
-                    MipsBuilder.MIPSBUILDER.buildLa(26, argument.getName().substring(1));
-                    MipsBuilder.MIPSBUILDER.buildLw(26, 26, 0);
-                    MipsBuilder.MIPSBUILDER.buildSw(26, 29, curOffset);
-                } else { //一定是被load出来的
-                    MipsBuilder.MIPSBUILDER.buildSw(reg, 29, curOffset);
+            if (i <= 0) {
+                if (MipsBuilder.MIPSBUILDER.hasAllocReg(argument)) {
+                    reg = MipsBuilder.MIPSBUILDER.getReg(argument);
+                    if (argument instanceof IrConstInt) {
+                        MipsBuilder.MIPSBUILDER.buildLi(aReg, ((IrConstInt) argument).getValue());
+                    } else if (argument instanceof IrGlobalVariable) {
+                        MipsBuilder.MIPSBUILDER.buildLa(26, argument.getName().substring(1));
+                        MipsBuilder.MIPSBUILDER.buildLw(aReg, 26, 0);
+                    } else { //一定是被load出来的
+                        MipsBuilder.MIPSBUILDER.buildMove(aReg, reg);
+                    }
+                } else {
+                    if (argument instanceof IrConstInt) {
+                        MipsBuilder.MIPSBUILDER.buildLi(aReg, ((IrConstInt) argument).getValue());
+                    } else if (argument instanceof IrGlobalVariable) {
+                        MipsBuilder.MIPSBUILDER.buildLa(26, argument.getName().substring(1));
+                        MipsBuilder.MIPSBUILDER.buildLw(aReg, 26, 0);
+                    } else { //一定是被load出来的
+                        int offset = MipsBuilder.MIPSBUILDER.getSymbolOffset(argument);
+                        MipsBuilder.MIPSBUILDER.buildLw(aReg, 29, offset);
+                    }
                 }
+                aReg++;//a1,a2,a3
+                curOffset = MipsBuilder.MIPSBUILDER.moveCurOffset(4);//每次传一个参数,需要把指针下移
             } else {
-                if (argument instanceof IrConstInt) {
-                    MipsBuilder.MIPSBUILDER.buildLi(26, ((IrConstInt) argument).getValue());
-                    MipsBuilder.MIPSBUILDER.buildSw(26, 29, curOffset);
-                } else if (argument instanceof IrGlobalVariable) {
-                    MipsBuilder.MIPSBUILDER.buildLa(26, argument.getName().substring(1));
-                    MipsBuilder.MIPSBUILDER.buildLw(26, 26, 0);
-                    MipsBuilder.MIPSBUILDER.buildSw(26, 29, curOffset);
-                } else { //一定是被load出来的
-                    int offset = MipsBuilder.MIPSBUILDER.getSymbolOffset(argument);
-                    MipsBuilder.MIPSBUILDER.buildLw(26, 29, offset);
-                    MipsBuilder.MIPSBUILDER.buildSw(26, 29, curOffset);
+                if (MipsBuilder.MIPSBUILDER.hasAllocReg(argument)) {
+                    reg = MipsBuilder.MIPSBUILDER.getReg(argument);
+                    if (argument instanceof IrConstInt) {
+                        MipsBuilder.MIPSBUILDER.buildLi(26, ((IrConstInt) argument).getValue());
+                        MipsBuilder.MIPSBUILDER.buildSw(26, 29, curOffset);
+                    } else if (argument instanceof IrGlobalVariable) {
+                        MipsBuilder.MIPSBUILDER.buildLa(26, argument.getName().substring(1));
+                        MipsBuilder.MIPSBUILDER.buildLw(26, 26, 0);
+                        MipsBuilder.MIPSBUILDER.buildSw(26, 29, curOffset);
+                    } else { //一定是被load出来的
+                        MipsBuilder.MIPSBUILDER.buildSw(reg, 29, curOffset);
+                    }
+                } else {
+                    if (argument instanceof IrConstInt) {
+                        MipsBuilder.MIPSBUILDER.buildLi(26, ((IrConstInt) argument).getValue());
+                        MipsBuilder.MIPSBUILDER.buildSw(26, 29, curOffset);
+                    } else if (argument instanceof IrGlobalVariable) {
+                        MipsBuilder.MIPSBUILDER.buildLa(26, argument.getName().substring(1));
+                        MipsBuilder.MIPSBUILDER.buildLw(26, 26, 0);
+                        MipsBuilder.MIPSBUILDER.buildSw(26, 29, curOffset);
+                    } else { //一定是被load出来的
+                        int offset = MipsBuilder.MIPSBUILDER.getSymbolOffset(argument);
+                        MipsBuilder.MIPSBUILDER.buildLw(26, 29, offset);
+                        MipsBuilder.MIPSBUILDER.buildSw(26, 29, curOffset);
+                    }
                 }
+                curOffset = MipsBuilder.MIPSBUILDER.moveCurOffset(4);//每次传一个参数,需要把指针下移
             }
-            curOffset = MipsBuilder.MIPSBUILDER.moveCurOffset(4);//每次传一个参数,需要把指针下移
         }
+        //将所有的寄存器写回地址
+        MipsBuilder.MIPSBUILDER.writeBackAll();
         //调整sp指针位置
         MipsBuilder.MIPSBUILDER.buildAddi(29, 29, spRecord);
         //跳入函数
@@ -103,6 +132,7 @@ public class IrCallInstr extends IrInstr {
         //恢复ra和sp
         MipsBuilder.MIPSBUILDER.buildLw(31, 29, 4);
         MipsBuilder.MIPSBUILDER.buildLw(29, 29, 8);
+        //MipsBuilder.MIPSBUILDER.popAReg();
         //如果函数有返回值,需要构建一个变量
         if (getFunction().getReturnType() != IrIntegetType.VOID) {
             MipsBuilder.MIPSBUILDER.buildVarSymbol(this);

@@ -58,7 +58,5 @@ public class IrLoadInstr extends IrInstr {
         }
         //构建新的变量
         MipsBuilder.MIPSBUILDER.buildVarSymbol(this);
-        //将src中取出的值存进当前的地址
-
     }
 }
