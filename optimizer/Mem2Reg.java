@@ -16,7 +16,7 @@ public class Mem2Reg {
     private final HashMap<IrBasicBlock, ArrayList<IrBasicBlock>> DF = new HashMap<>();//A的支配边界
     private final HashMap<IrInstr, ArrayList<IrInstr>> defs = new HashMap<>();//重新定义了alloca指令的指令
     private final HashMap<IrInstr, ArrayList<IrInstr>> uses = new HashMap<>();//使用了alloca指令的指令
-    private Stack<IrValue> InComingVals = new Stack<>();
+    private final HashMap<IrInstr, Stack<IrValue>> InComingVals = new HashMap<>();
 
     public Mem2Reg(IrModule module) {
         this.module = module;
@@ -272,67 +272,78 @@ public class Mem2Reg {
     }
 
     public void mem2Reg() {
-        ArrayList<IrFunction> functions = module.getIrFunctions();
-        for (IrFunction function : functions) {
-            ArrayList<IrBasicBlock> basicBlocks = function.getBasicBlocks();
-            IrBasicBlock enterBlock = basicBlocks.get(0);
-            for (IrBasicBlock basicBlock : basicBlocks) {
-                ArrayList<IrInstr> instrs = basicBlock.getInstrs();
-                for (IrInstr instr : instrs) {
-                    if (instr instanceof IrAllocaInstr && ((IrAllocaInstr) instr).getRefType() == IrIntegetType.INT32) {
+        insertPhi();
+        rename();
+    }
+
+    public void insertPhi() {
+        for (IrFunction function : module.getIrFunctions()) {
+            for (IrBasicBlock basicBlock : function.getBasicBlocks()) {
+                for (IrInstr instr : basicBlock.getInstrs()) {
+                    if (instr instanceof IrAllocaInstr &&
+                            ((IrAllocaInstr) instr).getRefType() == IrIntegetType.INT32) {
                         instr.needDelete = true;
-                        insertPhi(instr, function);
-                        rename(instr, enterBlock);
+                        //buildDefUse
+                        uses.put(instr, new ArrayList<>());
+                        defs.put(instr, new ArrayList<>());
+                        InComingVals.put(instr, new Stack<>());
+                        InComingVals.get(instr).push(new IrConstInt(0));
+                        ArrayList<IrBasicBlock> defBlock = new ArrayList<>();
+                        ArrayList<IrUse> uses = instr.getIrUses();
+                        for (IrUse use : uses) {
+                            IrUser user = use.getIrUser();
+                            if (user instanceof IrLoadInstr) {
+                                this.uses.get(instr).add((IrInstr) user);
+                            } else if (user instanceof IrStoreInstr) {
+                                defs.get(instr).add((IrInstr) user);
+                                if (!defBlock.contains(((IrStoreInstr) user).getBasicBlock())) {
+                                    defBlock.add(((IrStoreInstr) user).getBasicBlock());
+                                }
+                            }
+                        }
+                        //insertPhi
+                        ArrayList<IrBasicBlock> F = new ArrayList<>();
+                        Queue<IrBasicBlock> W = new LinkedList<IrBasicBlock>();
+                        for (IrBasicBlock block : defBlock) {
+                            W.offer(block);
+                        }
+                        while (!W.isEmpty()) {
+                            IrBasicBlock X = W.poll();
+                            for (IrBasicBlock Y : DF.getOrDefault(X, new ArrayList<>())) {
+                                if (!F.contains(Y)) {
+                                    ArrayList<IrInstr> instrInY = Y.getInstrs();
+                                    IrPhiInstr phiInstr = IrBuilder.IRBUILDER.buildPhiInstr(Y, function, Y.getPrev()); //插入到Y的开头
+                                    defs.get(instr).add(phiInstr);
+                                    this.uses.get(instr).add(phiInstr);
+                                    instrInY.add(0, phiInstr);
+                                    F.add(Y);
+                                    if (!defBlock.contains(Y)) {
+                                        W.offer(Y);
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
         }
     }
 
-    public void insertPhi(IrInstr instr, IrFunction function) {
-        //buildDefUse
-        uses.put(instr, new ArrayList<>());
-        defs.put(instr, new ArrayList<>());
-        InComingVals = new Stack<>();
-        InComingVals.push(new IrConstInt(0));
-        ArrayList<IrBasicBlock> defBlock = new ArrayList<>();
-        ArrayList<IrUse> uses = instr.getIrUses();
-        for (IrUse use : uses) {
-            IrUser user = use.getIrUser();
-            if (user instanceof IrLoadInstr) {
-                this.uses.get(instr).add((IrInstr) user);
-            } else if (user instanceof IrStoreInstr) {
-                defs.get(instr).add((IrInstr) user);
-                if (!defBlock.contains(((IrStoreInstr) user).getBasicBlock())) {
-                    defBlock.add(((IrStoreInstr) user).getBasicBlock());
-                }
-            }
-        }
-        //insertPhi
-        ArrayList<IrBasicBlock> F = new ArrayList<>();
-        Queue<IrBasicBlock> W = new LinkedList<IrBasicBlock>();
-        for (IrBasicBlock block : defBlock) {
-            W.offer(block);
-        }
-        while (!W.isEmpty()) {
-            IrBasicBlock X = W.poll();
-            for (IrBasicBlock Y : DF.getOrDefault(X, new ArrayList<>())) {
-                if (!F.contains(Y)) {
-                    ArrayList<IrInstr> instrInY = Y.getInstrs();
-                    IrPhiInstr phiInstr = IrBuilder.IRBUILDER.buildPhiInstr(Y, function, Y.getPrev()); //插入到Y的开头
-                    defs.get(instr).add(phiInstr);
-                    this.uses.get(instr).add(phiInstr);
-                    instrInY.add(0, phiInstr);
-                    F.add(Y);
-                    if (!defBlock.contains(Y)) {
-                        W.offer(Y);
+    public void rename() {
+        for (IrFunction function : module.getIrFunctions()) {
+            IrBasicBlock entryBlock = function.getBasicBlocks().get(0);
+            for (IrBasicBlock basicBlock : function.getBasicBlocks()) {
+                for (IrInstr instr : basicBlock.getInstrs()) {
+                    if (instr instanceof IrAllocaInstr &&
+                            ((IrAllocaInstr) instr).getRefType() == IrIntegetType.INT32) {
+                        renameMain(instr, entryBlock);
                     }
                 }
             }
         }
     }
 
-    public void rename(IrInstr allocaInstr, IrBasicBlock entryBlock) {
+    public void renameMain(IrInstr allocaInstr, IrBasicBlock entryBlock) {
         int defTime = 0; //当前块里的定义次数
         ArrayList<IrInstr> instrs = entryBlock.getInstrs();
         for (IrInstr instr : instrs) {
@@ -342,16 +353,16 @@ public class Mem2Reg {
             }
             if (uses.get(allocaInstr).contains(instr) && !(instr instanceof IrPhiInstr)) {
                 //对于load指令来说,需要替换等号左边的部分,将之后的use替换
-                replaceAllUse(instr, InComingVals.peek());
+                replaceAllUse(instr, InComingVals.get(allocaInstr).peek());
                 instr.needDelete = true;
             }
             //at def: push onto stack
             else if (defs.get(allocaInstr).contains(instr)) { //store instr
                 if (instr instanceof IrStoreInstr) {
-                    InComingVals.push(((IrStoreInstr) instr).getFrom());
+                    InComingVals.get(allocaInstr).push(((IrStoreInstr) instr).getFrom());
                     instr.needDelete = true;
                 } else {
-                    InComingVals.push(instr); //phi
+                    InComingVals.get(allocaInstr).push(instr); //phi
                 }
                 defTime++;
             }
@@ -364,19 +375,20 @@ public class Mem2Reg {
                     continue;
                 }
                 if (uses.get(allocaInstr).contains(instr) && instr instanceof IrPhiInstr) {
-                    ((IrPhiInstr) instr).setOperand(entryBlock, InComingVals.peek());
+                    ((IrPhiInstr) instr).setOperand(entryBlock, InComingVals.get(allocaInstr).peek());
                 }
             }
         }
         //call rename(v) on all children in D-tree,直接后继
         for (IrBasicBlock block : iDoms.getOrDefault(entryBlock, new ArrayList<>())) {
-            rename(allocaInstr, block);
+            renameMain(allocaInstr, block);
         }
         //for each def in this block pop from stack
         for (int i = 0; i < defTime; i++) {
-            InComingVals.pop();
+            InComingVals.get(allocaInstr).pop();
         }
     }
+
 
     //替换所有的use
     public void replaceAllUse(IrValue src, IrValue dst) {
@@ -394,13 +406,7 @@ public class Mem2Reg {
         for (IrFunction function : module.getIrFunctions()) {
             for (IrBasicBlock basicBlock : function.getBasicBlocks()) {
                 ArrayList<IrInstr> instrs = basicBlock.getInstrs();
-                Iterator<IrInstr> it = instrs.iterator();
-                while (it.hasNext()) {
-                    IrInstr instr = it.next();
-                    if (instr.needDelete) {
-                        it.remove();
-                    }
-                }
+                instrs.removeIf(instr -> instr.needDelete);
             }
         }
     }

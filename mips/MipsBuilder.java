@@ -294,7 +294,7 @@ public class MipsBuilder extends MipsValue {
     public int getReg(IrValue symbol) {
         int reg = varToReg.get(symbol);
         //将最新使用的加在队头
-        if (reg >= 8) {
+        if (reg >= 15) {
             usedQueue.remove((Integer) reg);
             usedQueue.add(0, (Integer) reg);
         }
@@ -302,7 +302,7 @@ public class MipsBuilder extends MipsValue {
     }
 
     public int allocReg(IrValue symbol) {
-        for (int i = 8; i <= 25; i++) {
+        for (int i = 5; i <= 25; i++) {
             if (!regToVar.containsKey(i)) {
                 varToReg.put(symbol, i);
                 regToVar.put(i, symbol);
@@ -333,29 +333,15 @@ public class MipsBuilder extends MipsValue {
 
     //所有寄存器值写回
     public void writeBackAll() {
-        for (int i = 8; i <= 25; i++) {
+        for (int i = 5; i <= 25; i++) {
             if (regToVar.containsKey(i)) {
                 IrValue symbol = regToVar.get(i);
                 buildSw(i, 29, getSymbolOffset(symbol));
             }
         }
-//        ArrayList<Integer> regs = new ArrayList<>();
-//        ArrayList<IrValue> values = new ArrayList<>();
-//        for (int i = 5; i <= 7; i++) {
-//            if (regToVar.containsKey(i)) {
-//                regs.add(i);
-//                values.add(regToVar.get(i));
-//            }
-//        }
         regToVar.clear();
         varToReg.clear();
         usedQueue.clear();
-//        for (int i = 0; i < regs.size(); i++) {
-//            int reg = regs.get(i);
-//            IrValue value = values.get(i);
-//            regToVar.put(reg, value);
-//            varToReg.put(value, reg);
-//        }
     }
 
     public void clearAll() {

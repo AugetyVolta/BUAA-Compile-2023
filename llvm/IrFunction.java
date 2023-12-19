@@ -1,12 +1,12 @@
 package llvm;
 
-import llvm.instr.IrInstr;
-import llvm.instr.IrInstrType;
+import llvm.instr.*;
 import llvm.type.IrIntegetType;
 import llvm.type.IrValueType;
 import mips.MipsBuilder;
 
 import java.util.ArrayList;
+import java.util.Collections;
 
 public class IrFunction extends IrUser {
     private IrIntegetType returnType; //函数返回值
@@ -69,10 +69,10 @@ public class IrFunction extends IrUser {
         //进入函数
         MipsBuilder.MIPSBUILDER.enterFunction();
         //填入参数
-        int aReg = 5;
         for (IrValue param : params) {
             MipsBuilder.MIPSBUILDER.buildVarSymbol(param);
         }
+        //allocReg();
         //相邻块跳转优化
         for (int i = 0; i < basicBlocks.size(); i++) {
             IrBasicBlock basicBlock = basicBlocks.get(i);
@@ -87,5 +87,34 @@ public class IrFunction extends IrUser {
                 basicBlock.buildMips();
             }
         }
+    }
+
+    public void allocReg() {
+        ArrayList<IrValue> values = new ArrayList<>();
+//        for (IrValue param : params) {
+//            values.add(param);
+//        }
+        for (IrBasicBlock basicBlock : getBasicBlocks()) {
+            for (IrInstr instr : basicBlock.getInstrs()) {
+                if (satisfyCond(instr)) {
+                    values.add(instr);
+                }
+            }
+        }
+        Collections.sort(values);
+        for (int i = 0; i < 10 && i < values.size(); i++) {
+            IrValue value = values.get(i);
+            MipsBuilder.MIPSBUILDER.setReg(value, i + 5);
+            MipsBuilder.MIPSBUILDER.buildVarSymbol(value);
+        }
+    }
+
+    public boolean satisfyCond(IrInstr instr) {
+        if (instr instanceof IrBinaryInstr || instr instanceof IrGepInstr ||
+                instr instanceof IrIcmpInstr || instr instanceof IrZextInstr ||
+                instr instanceof IrCallInstr && instr.getType() != IrIntegetType.VOID) {
+            return true;
+        }
+        return false;
     }
 }

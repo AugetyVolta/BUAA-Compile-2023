@@ -5,7 +5,7 @@ import llvm.type.IrValueType;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-public class IrValue {
+public class IrValue implements Comparable<IrValue> {
     //对于每个value的name
     private String name;
     private IrValueType type;
@@ -56,4 +56,9 @@ public class IrValue {
     public void buildMips() {
     }
 
+
+    @Override
+    public int compareTo(IrValue o) {
+        return -Integer.compare(this.irUses.size(), o.irUses.size());
+    }
 }
