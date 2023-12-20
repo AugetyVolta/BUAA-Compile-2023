@@ -135,7 +135,8 @@ public class IrBinaryInstr extends IrInstr {
             MipsBuilder.MIPSBUILDER.buildLi(reg, 0);
             MipsBuilder.MIPSBUILDER.buildVarSymbol(this);
             return true;
-        } else if (left instanceof IrConstInt && is2Power((IrConstInt) left)) {
+        }
+        else if (left instanceof IrConstInt && is2Power((IrConstInt) left)) {
             int offset = (int) (Math.log(((IrConstInt) left).getValue()) / Math.log(2));
             if (getOperand2() instanceof IrConstInt) {
                 MipsBuilder.MIPSBUILDER.buildLi(26, ((IrConstInt) getOperand2()).getValue());
@@ -216,6 +217,18 @@ public class IrBinaryInstr extends IrInstr {
         if (left instanceof IrConstInt && ((IrConstInt) left).getValue() == 0) {
             MipsBuilder.MIPSBUILDER.buildLi(reg, 0);
             MipsBuilder.MIPSBUILDER.buildVarSymbol(this);
+            return true;
+        } else if (right instanceof IrConstInt && ((IrConstInt) right).getValue() == 1) {
+            MipsBuilder.MIPSBUILDER.buildVarSymbol(this);
+            if (MipsBuilder.MIPSBUILDER.hasAllocReg(left)) {
+                MipsBuilder.MIPSBUILDER.buildMove(reg, MipsBuilder.MIPSBUILDER.getReg(left));
+            } else {
+                int offset1 = MipsBuilder.MIPSBUILDER.getSymbolOffset(left);
+                MipsBuilder.MIPSBUILDER.buildLw(reg, 29, offset1);
+            }
+            return true;
+        } else if (left.equals(right)) {
+            MipsBuilder.MIPSBUILDER.buildLi(reg, 1);
             return true;
         } else if (right instanceof IrConstInt) {
             int d = ((IrConstInt) right).getValue();

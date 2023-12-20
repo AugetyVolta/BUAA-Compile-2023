@@ -300,7 +300,10 @@ public class MipsBuilder extends MipsValue {
     }
 
     public int allocReg(IrValue symbol) {
-        for (int i = 5; i <= 25; i++) {
+        for (int i = 5; i <= 28; i++) {
+            if (i == 26 || i == 27) {
+                continue;
+            }
             if (!regToVar.containsKey(i)) {
                 varToReg.put(symbol, i);
                 regToVar.put(i, symbol);
@@ -331,7 +334,10 @@ public class MipsBuilder extends MipsValue {
 
     //所有寄存器值写回
     public void writeBackAll() {
-        for (int i = 5; i <= 25; i++) {
+        for (int i = 5; i <= 28; i++) {
+            if (i == 26 || i == 27) {
+                continue;
+            }
             if (regToVar.containsKey(i)) {
                 IrValue symbol = regToVar.get(i);
                 buildSw(i, 29, getSymbolOffset(symbol));
