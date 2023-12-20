@@ -39,12 +39,12 @@ public class IrMoveInstr extends IrInstr {
         } else {
             if (MipsBuilder.MIPSBUILDER.hasAllocReg(getOperand(1))) {
                 reg2 = MipsBuilder.MIPSBUILDER.getReg(getOperand(1));
+                MipsBuilder.MIPSBUILDER.buildMove(reg1, reg2);
             } else {
-                reg2 = MipsBuilder.MIPSBUILDER.allocReg(getOperand(1));
                 int offset = MipsBuilder.MIPSBUILDER.getSymbolOffset(getOperand(1));
-                MipsBuilder.MIPSBUILDER.buildLw(reg2,29,offset);
+                MipsBuilder.MIPSBUILDER.buildLw(reg1,29,offset);
             }
-            MipsBuilder.MIPSBUILDER.buildMove(reg1, reg2);
+
         }
     }
 }
