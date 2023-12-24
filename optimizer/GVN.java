@@ -40,7 +40,7 @@ public class GVN {
                     IrValue value = instrSet.get(instr.hash());
                     replaceAllUse(instr, value);
                     //移除所有的use
-                    for (IrUse use : instr.getIrUses()) {
+                    for (IrUse use : instr.getOperands()) {
                         IrValue usee = use.getIrUsee();
                         usee.removeUse(use);
                     }
