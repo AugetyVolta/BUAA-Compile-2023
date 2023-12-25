@@ -820,7 +820,11 @@ public class Parser {
         stmtReturn.addChild(returnTk);
         nextToken();
         //[Exp]
-        if (curToken.getSyntaxType() != SyntaxType.SEMICN) {
+        if (curToken.getSyntaxType() == SyntaxType.LPARENT ||
+                curToken.getSyntaxType() == SyntaxType.IDENFR ||
+                curToken.getSyntaxType() == SyntaxType.INTCON ||
+                curToken.getSyntaxType() == SyntaxType.PLUS ||
+                curToken.getSyntaxType() == SyntaxType.MINU) {
             ExpNode expNode = parseExp();
             stmtReturn.addChild(expNode);
         }
